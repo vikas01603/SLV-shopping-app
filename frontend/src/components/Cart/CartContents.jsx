@@ -20,7 +20,7 @@ const CartContents = () => {
             quantity:1,
             price: 25,
             image:"https://picsum.photos/200?random=2",   
-        }
+        },
     ];
   return (
     <div>
