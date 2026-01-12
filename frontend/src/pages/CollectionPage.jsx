@@ -99,7 +99,9 @@ const CollectionPage = () => {
             <FaFilter className="mr-2" />Filters</button>
 
             {/**filter side bar for windows */}
-            <div ref={sidebarRef} className={`${isSidebarOpen ? "translate-x-0" :"-translate-x-full" } fixed inset-y-0 z-50 left-0 w-64 bg-white transition-transform duration-300 overflow-y-auto h-screen  lg:static lg:translate-x-0`}>
+            <div ref={sidebarRef} 
+            className={`${isSidebarOpen ? "translate-x-0" :"-translate-x-full" } 
+            fixed inset-y-0 z-50 left-0 w-64 bg-white transition-transform duration-300 overflow-y-auto h-screen lg:static lg:translate-x-0`}>
                 <FilterSidebar/>
             </div>
             <div className="flex-grow p-4">

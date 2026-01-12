@@ -5,10 +5,10 @@ const RazorPayButton = ({ amount, onSuccess, onError }) => {
   const handlePayment = () => {
 
     const options = {
-      key: "rzp_test_S1isNPwO9jCokZ", // Razorpay Key
+      key: import.meta.env.VITE_RAZORPAY_CLIENT_ID, // Razorpay Key
       amount: amount * 100, // Razorpay works in paise
       currency: "INR",
-      name: "My Shop",
+      name: "SLV",
       description: "Order Payment",
 
       handler: function (response) {
@@ -16,13 +16,13 @@ const RazorPayButton = ({ amount, onSuccess, onError }) => {
       },
 
       prefill: {
-        name: "User",
-        email: "user@gmail.com",
-        contact: "9999999999",
+        name: "Kalpana",
+        email: "kalpana10@gmail.com",
+        contact: "7337847118",
       },
 
       theme: {
-        color: "#000000",
+        color: "#2f5bea",
       },
     };
 
@@ -33,9 +33,17 @@ const RazorPayButton = ({ amount, onSuccess, onError }) => {
   return (
     <button
       onClick={handlePayment}
-      className="w-full bg-black text-white py-3 rounded"
+      className="w-full flex items-center rounded-lg overflow-hidden border border-blue-600 shadow-sm hover:shadow-md transition"
     >
-      Pay ₹{amount}
+      {/* Right content */}
+      <div className="flex-1 bg-[#0439cb] py-3 px-4 text-center">
+        <p className="text-[#ffffff] font-semibold text-base leading-tight">
+          Pay  ₹{amount}
+        </p>
+        <p className="text-xs text-white">
+          Secured by Razorpay
+        </p>
+      </div>
     </button>
   );
 };
