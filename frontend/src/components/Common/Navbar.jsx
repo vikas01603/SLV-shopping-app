@@ -28,10 +28,10 @@ const Navbar = () => {
         <Link to="/" className="text-2xl font-medium">SLV </Link>
       </div>
       <div className="hidden md:flex space-x-6">
-        <Link to="/collections/all" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">SAREES</Link>
-        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">DRESS</Link>
-        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">MATERIALS</Link>
+        <Link to="/collections/all" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">WOMENS</Link>
+        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">MENS</Link>
         <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">TOP WEARS</Link>
+        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">BOTTOM WEARS</Link>
       </div>
       {/** Right - Icons */}
       <div className="flex items-center space-x-4">
