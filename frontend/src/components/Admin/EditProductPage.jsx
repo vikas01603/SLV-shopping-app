@@ -76,6 +76,14 @@ const EditProductPage = () => {
         }
     }
 
+    const handleDeleteImage = (index) => {
+        const updatedImages = productData.images.filter((_, i) => i !== index);
+        setProductData((prevData) => ({
+            ...prevData,
+            images: updatedImages,
+        }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         dispatch(updateProduct({id, productData}));
@@ -156,9 +164,14 @@ const EditProductPage = () => {
                 {uploading && <p>Uploading image...</p>}
                 <div className="flex gap-4 mt-4">
                     {productData.images.map((image, index) => (
-                        <div key={index}>
+                        <div key={index} className="relative group">
                             <img src={image.url} alt={image.altText || "Product Image"} 
                             className="w-20 h-20 object-cover rounded-md shadow-md"/>
+                             <button
+                                type="button"
+                                onClick={() => handleDeleteImage(index)}
+                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            >X</button>
                         </div>
                     ))}
                 </div>
