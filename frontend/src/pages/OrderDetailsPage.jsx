@@ -44,7 +44,7 @@ const OrderDetailsPage = () => {
             
             <span className={`${orderDetails.isDelivered ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}
               px-3 py-1 rounded-full text-small font-medium mb-2`}>
-                {orderDetails.isDelivered ? "Delivered" : "Pending Delivery"}
+                {orderDetails.isDelivered ? "Delivered" : orderDetails.status}
             </span>
 
           </div>
