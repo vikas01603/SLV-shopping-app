@@ -5,11 +5,17 @@ import SearchBar from './SearchBar';
 import CartDrawer from '../Layout/CartDrawer';
 import { IoMdClose } from 'react-icons/io';
 import logo from "../../assets/logo.jpeg";
+import { useSelector } from 'react-redux';
 
 const Navbar = () => {
 
   const [drawerOpen, setDrawerOpen] =useState(false);
   const [navDrawerOpen, setNavDrawerOpen] = useState(false);
+  const {cartItems} = useSelector((state) => state.cart);
+  const {user} = useSelector((state) => state.auth);
+
+  const cartItemCount = cartItems.reduce((total,product) => 
+    total + product.quantity, 0) || 0;
 
   const toggleNavDrawer = () => {
     setNavDrawerOpen(!navDrawerOpen);
@@ -28,20 +34,21 @@ const Navbar = () => {
         <Link to="/" className="text-2xl font-medium">SLV </Link>
       </div>
       <div className="hidden md:flex space-x-6">
-        <Link to="/collections/all" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">WOMENS</Link>
-        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">MENS</Link>
-        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">TOP WEARS</Link>
-        <Link to="" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">BOTTOM WEARS</Link>
+        <Link to="/collections/all?gender=Women" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">WOMENS</Link>
+        <Link to="/collections/all?gender=Men" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">MENS</Link>
+        <Link to="/collections/all?category=Top Wear" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">TOP WEARS</Link>
+        <Link to="/collections/all?category=Bottom Wear" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">BOTTOM WEARS</Link>
       </div>
       {/** Right - Icons */}
       <div className="flex items-center space-x-4">
-        <Link to="/admin" className="block bg-black px-2 rounded text-sm text-white">Admin</Link>
+        {user && user.role === "admin" && (<Link to="/admin" className="block bg-black px-2 rounded text-sm text-white">Admin</Link>)}
         <Link to="/profile" className="hover:text-[#B89B5E]">
         <HiOutlineUser className='h-6 w-6 text-[#2B2B2B]'/>
         </Link>
         <button onClick={toggleCartDrawer} className="relative hover:text-[#B89B5E]">
           <HiOutlineShoppingBag className="h-6 w-6 text-[#2B2B2B]" />
-          <span className="absolute -top-1 bg-theme-gold text-white text-xs rounded-full px-2 py-0.5">4</span>
+          {cartItemCount > 0 && (<span className="absolute -top-1 bg-theme-gold text-white text-xs rounded-full px-2 py-0.5">{cartItemCount}</span>)}
+          
         </button>
         {/**search icon */}
         <div className="overflow-hidden">
@@ -67,16 +74,16 @@ const Navbar = () => {
       <div className="p-4">
         <h3 className="text-xl font-semibold mb-4">Menu</h3>
         <nav className="space-y-4">
-          <Link to="#" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">SAREES</Link>
-          <Link to="#" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">DRESS</Link>
-          <Link to="#" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">MATERIALS</Link>
-          <Link to="#" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">TOP WEARS</Link>
+          <Link to="/collections/all?gender=Women" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">WOMENS</Link>
+          <Link to="/collections/all?gender=Men" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">MENS</Link>
+          <Link to="/collections/all?category=Top Wear" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">TOP WEARS</Link>
+          <Link to="/collections/all?category=Bottom Wear" onClick={toggleNavDrawer} className="block text-[#2B2B2B] hover:text-[#B89B5E]">BOTTOM WEARS</Link>
         </nav>
       </div>
     </div>
 
     </>
   )
-}
+};
 
 export default Navbar;

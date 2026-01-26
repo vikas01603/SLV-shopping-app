@@ -6,7 +6,7 @@ const RazorPayButton = ({ amount, onSuccess, onError }) => {
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_CLIENT_ID, // Razorpay Key
-      amount: amount * 100, // Razorpay works in paise
+      amount: Math.round(amount * 100), // Razorpay works in paise
       currency: "INR",
       name: "SLV",
       description: "Order Payment",
@@ -27,6 +27,12 @@ const RazorPayButton = ({ amount, onSuccess, onError }) => {
     };
 
     const razorpay = new window.Razorpay(options);
+    
+    razorpay.on('payment.failed', function (response){
+        alert(response.error.description);
+        onError(response.error);
+    });
+
     razorpay.open();
   };
 

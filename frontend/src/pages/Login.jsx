@@ -1,14 +1,39 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import login from  "../assets/login.webp";
 import { useState } from 'react';
+import {loginUser} from "../redux/slices/authSlice";
+import {useDispatch, useSelector} from "react-redux";
+import { mergeCart } from '../redux/slices/cartSlice';
+
 const Login = () => {
     const [email, setEmail] = useState("");  
     const [password, setPassword] = useState(""); 
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const {user, guestId, loading, error} = useSelector((state)=> state.auth);
+    const {cartItems} = useSelector((state)=> state.cart);
+
+    // Get redirect parameter and check if its checkout or something else
+    const redirect = new URLSearchParams(location.search).get("redirect") || "/";
+    const isCheckoutRedirect = redirect.includes("checkout");
+
+    useEffect(()=> {
+        if(user){
+            if(cartItems?.length > 0 && guestId){
+                dispatch(mergeCart({guestId, user})).then(() => {
+                    navigate(isCheckoutRedirect ? "/checkout" : "/");
+                });
+            }else{
+                navigate(isCheckoutRedirect ? "/checkout" : "/");
+            }
+        }
+    }, [user, guestId, cartItems, navigate, isCheckoutRedirect, dispatch]);
 
     const handleSumbit = (e) => {
         e.preventDefault();
-        console.log("User Register:", {name, email, password});
+        dispatch(loginUser({email, password}))
     };
 
   return (
@@ -39,11 +64,12 @@ const Login = () => {
                             placeholder="Enter your Password"/>
                     </div>
                     <button type="submit" className="w-full bg-black text-white p-2 rounded-lg font-semibold hover:bg-gray-800 transition">
-                        Sign In
+                        {loading ? "Loading..." : "Sign In"}
                     </button>
+                    {error && <p className="mt-4 text-center text-red-500">{error}</p>}
                     <p className="mt-6 text-center text-sm">
                         Dont have an account?{" "}
-                        <Link to="/register" className="text-blue-500">
+                        <Link to={`/register?redirect=${encodeURIComponent(redirect)}`} className="text-blue-500">
                             Register
                         </Link>
                     </p>

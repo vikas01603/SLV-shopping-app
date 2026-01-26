@@ -1,35 +1,24 @@
 import React from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { clearCart } from '../redux/slices/cartSlice';
+import { useEffect } from 'react';
 
-const checkout = {
-    _id: "12323",
-    createdAt: new Date(),
-    checkoutItems: [
-        {
-            productId: "1",
-            name: "Dress",
-            color:"black",
-            size: "M",
-            price: 650,
-            quantity:1,
-            image: "https://picsum.photos/150?random=1",
-        },
-        {
-            productId: "2",
-            name: "Kurthi",
-            color:"black",
-            size: "L",
-            price: 700,
-            quantity:2,
-            image: "https://picsum.photos/150?random=2",
-        },
-    ],
-    shippingAddress: {
-        address: "123 Fashion Street ",
-        city:"Mumbai",
-        country: "India",
-    }
-}
 const OrderConfirmationPage = () => {
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const {checkout} = useSelector((state) => state.checkout);
+
+    //Clear cart when order is confiremd
+    useEffect(()=> {
+        if(checkout && checkout._id ){
+            dispatch(clearCart());
+            localStorage.removeItem("cartItems");
+        }else{
+            navigate("/my-orders");
+        }
+    }, [checkout, navigate]);
 
     const calculateEstimatedDelivery = (createdAt) => {
         const orderDate = new Date(createdAt);
@@ -50,7 +39,7 @@ const OrderConfirmationPage = () => {
                             Order ID: {checkout._id}
                         </h2>
                         <p className="text-gray-500">
-                            Order date: {new Date(checkout.createdAt).toLocaleDateString()}
+                            Order date: {new Date(checkout.createdAt).toLocaleDateString('en-GB')}
                         </p>
                     </div>
 

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRef, useEffect} from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom'; 
+import axios from 'axios';
 
 const NewArrivals = () => {
     const scrollRef = useRef(null);
@@ -14,96 +15,23 @@ const NewArrivals = () => {
     const [activeIndex, setActiveIndex] = React.useState(0); //indexing dor the dotted scroll 
     const [isPaused, setIsPaused] = useState(false); // auto scroll pausing when user interacts with the scroll
 
-    const newArrivals = [
-        {
-            _id: "1",
-            name: "Stylish Saree",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=1",
-                    altText: "Stylish Saree",
-                },
-            ],
-        },
-        {
-            _id: "2",
-            name: "Stylish Saree",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=2",
-                    altText: "Stylish Saree",
-                },
-            ],
-        },
-        {
-            _id: "3",
-            name: "Stylish Saree",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=3",
-                    altText: "Stylish Saree",
-                },
-            ],
-        },
-        {
-            _id: "4",
-            name: "Stylish Dress",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=4",
-                    altText: "Stylish Dress",
-                },
-            ],
-        },
-        {
-            _id: "5",
-            name: "Stylish Saree",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=5",
-                    altText: "Stylish Saree",
-                },
-            ],
-        },
-        {
-            _id: "6",
-            name: "Stylish Dress",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=6",
-                    altText: "Stylish Dress",
-                },
-            ],
-        },
-        {
-            _id: "7",
-            name: "Stylish Material",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=7",
-                    altText: "Stylish Material",
-                },
-            ],
-        },
-        {
-            _id: "8",
-            name: "Stylish Material",
-            price:1200,
-            images:[
-                {
-                    url: "https://picsum.photos/500/500?random=8",
-                    altText: "Stylish Dress",
-                },
-            ],
-        },
-    ];
+    const [newArrivals, setNewArrivals] = useState([]);
+
+    useEffect(() => {
+        const fetchNewArrivals = async () => {
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/products/new-arrivals`
+                );
+
+                setNewArrivals(Array.isArray(response.data) ? response.data : []); // ✅ FIX
+            } catch (error) {
+                console.log("Error fetching new arrivals:", error);
+                setNewArrivals([]); // safety fallback
+            }
+        };
+        fetchNewArrivals();
+    }, []);
 
     const handleMouseDown = (e) => {
         setIsDragging(true);
@@ -170,7 +98,7 @@ const NewArrivals = () => {
 
         return () => clearInterval(interval);
     }
-    }, [isDragging, isPaused]);
+    }, [isDragging, isPaused, newArrivals]);
 
   return (
     <section className="py-16 px-4 lg:px-0">

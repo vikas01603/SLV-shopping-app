@@ -3,64 +3,54 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import ProductGrid from './ProductGrid';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import { fetchProductDetails, fetchSimilarProducts } from '../../redux/slices/productsSlice';
+import { addToCart } from '../../redux/slices/cartSlice';
 
-
-const selectedProduct = {
-    name: "Stylish Dress",
-    price: 120,
-    originalPrice: 150,
-    description: "This is a stylish cotton saree perfect for any ocsasion",
-    brand: "FashionBrand",
-    material: "100% cotton",
-    sizes: ["S", "M" , "L", "XL"],
-    colors: ["Red", "Black"],
-    images: [{
-        url: "https://picsum.photos/500/500?random=1",
-        altText: "Stylish Dress 1",
-    },
-    {
-        url: "https://picsum.photos/500/500?random=2",
-        altText: "Stylish Dress 2",
-    },
-    ],
-};
-
-const similarProducts = [
-    {
-        _id:1,
-        name:"Product 1",
-        price:100,
-        images:[{
-            url:"https://picsum.photos/500/500?random=1"}],
-    },
-    {
-        _id:2,
-        name:"Product 2",
-        price:100,
-        images:[{
-            url:"https://picsum.photos/500/500?random=8"}],
-    },
-    {
-        _id:3,
-        name:"Product 3",
-        price:100,
-        images:[{
-            url:"https://picsum.photos/500/500?random=6"}],
-    },
-    {
-        _id:4,
-        name:"Product 4",
-        price:100,
-        images:[{
-            url:"https://picsum.photos/500/500?random=7"}],
-    },
-];
-const ProductDetails = () => {
+const ProductDetails = ({productId}) => {
+    const {id} = useParams();
+    const dispatch = useDispatch();
+    const {selectedProduct, loading, error, similarProducts} = useSelector((state) => state.products);
+    const {user, guestId} = useSelector((state) => state.auth);
     const [mainImage, setMainImage] = useState("");
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedColor,setSelectedColor] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+    const productColors = {
+        "Red": "#FF0000",
+        "Blue": "#0000FF",
+        "Yellow": "#FFFF00",
+        "Black": "#000000",
+        "Navy Blue": "#000080",
+        "Burgundy": "#800020",
+        "Light Blue": "#ADD8E6",
+        "Dark Wash": "#1C2841",
+        "Tropical Print": "#FF7F50",
+        "Navy Palms": "#000080",
+        "White": "#FFFFFF",
+        "Gray": "#808080",
+        "Heather Gray": "#9AA297",
+        "Olive": "#808000",
+        "Charcoal": "#36454F",
+        "Dark Green": "#006400",
+        "Navy": "#000080",
+        "Beige": "#F5F5DC",
+        "Khaki": "#F0E68C",
+        "Pink": "#FFC0CB",
+        "Brown": "#A52A2A",
+    };
+
+    const productFetchId = productId || id;
+
+    useEffect(() => {
+        if(productFetchId) {
+            dispatch(fetchProductDetails(productFetchId));
+            dispatch(fetchSimilarProducts({id: productFetchId}));
+        }
+    }, [dispatch, productFetchId])
     
     useEffect(() => {
         if(selectedProduct?.images?.length > 0) {
@@ -80,13 +70,35 @@ const ProductDetails = () => {
         }
         setIsButtonDisabled(true);
 
-        setTimeout(() => {
-            toast.success("Product added to cart!", {duration:1000,});
-            setIsButtonDisabled(false);
-        }, 500);
+        dispatch(
+            addToCart({
+                _id: productFetchId,
+                name: selectedProduct?.name,
+                price: selectedProduct?.price,
+                image: mainImage,
+                size: selectedSize,
+                color: selectedColor,
+                quantity,
+                userId: user?._id,
+                guestId,
+            })
+        );
+        
+        toast.success("Product added to Cart!", {
+            duration:1000,
+        });
+        setIsButtonDisabled(false);
+    };
+
+    if(loading){
+        <p>Loading...</p>
+    }
+    if(error){
+        <p>Error: {error}</p>
     }
   return (
     <div className="p-6">
+        {selectedProduct && (
         <div className="max-w-6xl mx-auto bg-white p-8 rounded-lg">
             <div className="flex flex-col md:flex-row">
                 {/**Left thumbnails */}
@@ -140,8 +152,9 @@ const ProductDetails = () => {
                                 <button key={color} 
                                 onClick={() => setSelectedColor(color)}
                                 className={`w-8 h-8 rounded-full border ${selectedColor === color ? "border-4 border-black" : "border-gray-300"}`}
-                                style={{backgroundColor:color.toLocaleLowerCase(),
-                                    filter: "brightness(0.5)",
+                                style={{
+                                    backgroundColor: productColors[color] || color.toLocaleLowerCase(),
+                                    filter: color === "White" ? "none" : "brightness(0.9)",
                                 }}></button>
                             ))}
                         </div>
@@ -172,7 +185,7 @@ const ProductDetails = () => {
                     <button onClick={handleAddToCart} 
                     disabled={isButtonDisabled}
                     className={`bg-black text-white py-2 px-6 rounded w-full mb-4 ${isButtonDisabled ? "cursor-not-allowed opacity-50":"hover:bg-gray-900"}`}>
-                         {isButtonDisabled ? "Adding..." : "Add TO CART"  }
+                         {isButtonDisabled ? "ADDING..." : "ADD TO CART"  }
                     </button>
                     
                     {/**characteristics*/}
@@ -195,9 +208,10 @@ const ProductDetails = () => {
             </div>
             <div className="mt-20">
                 <h2 className="text-2xl text-center font-medium mb-4">You May Also Like</h2>
-                <ProductGrid products= {similarProducts}/>
+                <ProductGrid products= {similarProducts} loading={loading} error={error}/>
             </div>
         </div>
+        )}
     </div>
   );
 };
