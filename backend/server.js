@@ -17,18 +17,12 @@ const adminOrderRoutes = require("./routes/adminOrderRoutes");
 const app = express();
 
 app.use(express.json());
-const allowedOrigins = [
-  'https://slv-online-store.vercel.app',
-  'http://localhost:5173'
-];
+
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow requests from any origin
+    callback(null, true); 
   },
   methods: 'GET,POST,PUT,DELETE',
   credentials: true
@@ -61,5 +55,5 @@ app.use("/api/admin/products", productAdminRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
