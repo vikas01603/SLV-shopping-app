@@ -2,7 +2,7 @@ import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
 
 
-const API_URL = `${import.meta.env.VITE_BACKEND_URL}`;
+const API_URL = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
 //Async thunk to fetch admin products
 export const fetchAdminProducts = createAsyncThunk("adminProducts/fetchProducts", async() => {

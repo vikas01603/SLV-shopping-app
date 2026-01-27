@@ -8,6 +8,12 @@ const protect = async (req, res, next) => {
     if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
         try {
             token = req.headers.authorization.split(" ")[1];
+            
+            // Remove any leading/trailing quotes if the token was stringified twice
+            if (token && (token.startsWith('"') || token.startsWith("'"))) {
+                token = token.slice(1, -1);
+            }
+
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             req.user = await User.findById(decoded.user.id).select("-password"); //exclude password 

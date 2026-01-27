@@ -36,6 +36,8 @@ const CreateProductPage = () => {
         }));
     };
 
+    const API_URL = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         const formData = new FormData();
@@ -43,11 +45,12 @@ const CreateProductPage = () => {
 
         try {
             setUploading(true);
-            const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/upload`,
+            const { data } = await axios.post(`${API_URL}/api/upload`,
                 formData,
                 {
                     headers: {
-                        "Content-Type": "multipart/form-data"
+                        "Content-Type": "multipart/form-data",
+                         Authorization: `Bearer ${localStorage.getItem("userToken")}`,
                     },
                 }
             );

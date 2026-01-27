@@ -2,10 +2,12 @@ import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
 
 //Async thunk to fetch admin orders
+const API_URL = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+
 export const fetchAllOrders = createAsyncThunk("adminOrders/fetchAllOrders", 
     async(_, {rejectWithValue}) => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin/orders`,
+        const response = await axios.get(`${API_URL}/api/admin/orders`,
             {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("userToken")}`
@@ -22,7 +24,7 @@ export const fetchAllOrders = createAsyncThunk("adminOrders/fetchAllOrders",
 export const updateOrderStatus = createAsyncThunk("adminOrders/updateOrderStatus", 
     async({id, status}, {rejectWithValue}) => {
     try {
-        const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/admin/orders/${id}`,
+        const response = await axios.put(`${API_URL}/api/admin/orders/${id}`,
             {status},
             {
                 headers: {
@@ -40,7 +42,7 @@ export const updateOrderStatus = createAsyncThunk("adminOrders/updateOrderStatus
 export const deleteOrder = createAsyncThunk("adminOrders/deleteOrder", 
     async(id, {rejectWithValue}) => {
     try {
-        const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/admin/orders/${id}`,
+        const response = await axios.delete(`${API_URL}/api/admin/orders/${id}`,
             {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("userToken")}`
