@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { createProduct } from '../../redux/slices/adminProductSlice';
+import { createProduct } from '../../redux/slices/adminProductsSlice';
 import axios from 'axios';
 
 const CreateProductPage = () => {
