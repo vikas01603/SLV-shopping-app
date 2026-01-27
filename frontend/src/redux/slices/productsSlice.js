@@ -2,6 +2,8 @@ import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
 
 //Async Thunk to fetch products by collection and optional filters
+const API_URL = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+
 export const fetchProductsByFilters = createAsyncThunk("products/fetchByFilters", 
     async ({collection,
             size,
@@ -30,20 +32,20 @@ export const fetchProductsByFilters = createAsyncThunk("products/fetchByFilters"
         if(brand) query.append("brand", brand);
         if(limit) query.append("limit", limit);
 
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products?${query.toString()}`);
+        const response = await axios.get(`${API_URL}/api/products?${query.toString()}`);
         return response.data;
     }
 ); 
 
 //Async Thunk to fetch a single product by ID
 export const fetchProductDetails = createAsyncThunk("products/fetchProductDetails", async (id) => {
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
+    const response = await axios.get(`${API_URL}/api/products/${id}`);
     return response.data;
 });
 
 //Async thunk to fetch similar porducts
 export const updateProduct = createAsyncThunk("products/updateProduct", async ({id, productData}) => {
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`, productData, 
+    const response = await axios.put(`${API_URL}/api/products/${id}`, productData, 
         {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("userToken")}`,
@@ -55,7 +57,7 @@ export const updateProduct = createAsyncThunk("products/updateProduct", async ({
 
 //Async thunk to fetch similar products
 export const fetchSimilarProducts = createAsyncThunk("products/fetchSimilarProducts", async({id}) => {
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/similar/${id}`);
+    const response = await axios.get(`${API_URL}/api/products/similar/${id}`);
     return response.data;
 });
 

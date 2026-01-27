@@ -2,6 +2,8 @@ import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
 
 //Retrieve user info and token from Local Storage if available
+const API_URL = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, ""); 
+
 const userFromStorage = localStorage.getItem("userInfo") ? JSON.parse(localStorage.getItem("userInfo")) : null;
 
 //check for an existing guest ID in the local storage or generate a new one
@@ -19,7 +21,7 @@ const initialState = {
 //Async Thunk for user Login
 export const loginUser = createAsyncThunk("auth/loginUser", async(userData, {rejectWithValue}) => {
     try{
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/login`, userData
+        const response = await axios.post(`${API_URL}/api/users/login`, userData
         );
         localStorage.setItem("userInfo", JSON.stringify(response.data.user));
         localStorage.setItem("userToken", response.data.token);
@@ -32,7 +34,7 @@ export const loginUser = createAsyncThunk("auth/loginUser", async(userData, {rej
 //Async Thunk for user Registration
 export const registerUser = createAsyncThunk("auth/registerUser", async(userData, {rejectWithValue}) => {
     try{
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/register`, userData
+        const response = await axios.post(`${API_URL}/api/users/register`, userData
         );
         localStorage.setItem("userInfo", JSON.stringify(response.data.user));
         localStorage.setItem("userToken", response.data.token);

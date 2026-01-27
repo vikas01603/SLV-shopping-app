@@ -19,14 +19,7 @@ const app = express();
 app.use(express.json());
 
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests from any origin
-    callback(null, true); 
-  },
-  methods: 'GET,POST,PUT,DELETE',
-  credentials: true
-}));
+app.use(cors());
 
 
 dotenv.config();
