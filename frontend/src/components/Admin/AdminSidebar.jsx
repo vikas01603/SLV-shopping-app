@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { logout } from '../../redux/slices/authSlice';
 import { clearCart } from '../../redux/slices/cartSlice';
-import logo from "../../assets/lotusBNw.JPG";
+import logo from "../../assets/LotusBNw.JPG";
 
 const AdminSidebar = ({ closeSidebar }) => {
     const navigate = useNavigate();
@@ -18,14 +18,14 @@ const AdminSidebar = ({ closeSidebar }) => {
 
     return (
         <div className="h-full flex flex-col p-4 overflow-y-auto">
-            
+
             {/* Logo / Header - Side-by-Side Layout */}
             <div className="mb-8 border-b border-gray-100 pb-6 flex flex-col items-center">
-                 <Link to="/admin" className="group flex flex-col items-center" onClick={closeSidebar}>
+                <Link to="/admin" className="group flex flex-col items-center" onClick={closeSidebar}>
                     <div className="flex items-center gap-3">
-                        <img 
-                            src={logo} 
-                            alt="SLV Logo" 
+                        <img
+                            src={logo}
+                            alt="SLV Logo"
                             className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110"
                         />
                         <span className="text-2xl font-black tracking-tighter text-black uppercase leading-none">
@@ -40,11 +40,11 @@ const AdminSidebar = ({ closeSidebar }) => {
 
             {/* Navigation - Cluster at top */}
             <nav className="space-y-1">
-                <NavLink 
-                    to="/admin/users" 
+                <NavLink
+                    to="/admin/users"
                     onClick={closeSidebar}
-                    className={({isActive}) => isActive 
-                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                    className={({ isActive }) => isActive
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]"
                         : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
                     }
                 >
@@ -52,11 +52,11 @@ const AdminSidebar = ({ closeSidebar }) => {
                     <span className="font-semibold tracking-tight text-sm">Users</span>
                 </NavLink>
 
-                <NavLink 
-                    to="/admin/products" 
+                <NavLink
+                    to="/admin/products"
                     onClick={closeSidebar}
-                    className={({isActive}) => isActive 
-                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                    className={({ isActive }) => isActive
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]"
                         : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
                     }
                 >
@@ -64,11 +64,11 @@ const AdminSidebar = ({ closeSidebar }) => {
                     <span className="font-semibold tracking-tight text-sm">Catalog</span>
                 </NavLink>
 
-                <NavLink 
-                    to="/admin/orders" 
+                <NavLink
+                    to="/admin/orders"
                     onClick={closeSidebar}
-                    className={({isActive}) => isActive 
-                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                    className={({ isActive }) => isActive
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]"
                         : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
                     }
                 >
@@ -76,11 +76,11 @@ const AdminSidebar = ({ closeSidebar }) => {
                     <span className="font-semibold tracking-tight text-sm">Orders</span>
                 </NavLink>
 
-                <NavLink 
-                    to="/" 
+                <NavLink
+                    to="/"
                     onClick={closeSidebar}
-                    className={({isActive}) => isActive 
-                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                    className={({ isActive }) => isActive
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]"
                         : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
                     }
                 >
@@ -89,8 +89,8 @@ const AdminSidebar = ({ closeSidebar }) => {
                 </NavLink>
 
                 {/* Logout - Now part of the main list */}
-                <button 
-                    onClick={handleLogout} 
+                <button
+                    onClick={handleLogout}
                     className="w-full text-gray-500 hover:bg-red-50 hover:text-red-500 py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200 mt-2"
                 >
                     <FaSignOutAlt className="text-base opacity-80" />
