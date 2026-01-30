@@ -47,7 +47,7 @@ const Navbar = () => {
         </Link>
         <button onClick={toggleCartDrawer} className="relative hover:text-[#B89B5E]">
           <HiOutlineShoppingBag className="h-6 w-6 text-[#2B2B2B]" />
-          {cartItemCount > 0 && (<span className="absolute -top-1 bg-theme-gold text-white text-xs rounded-full px-2 py-0.5">{cartItemCount}</span>)}
+          {cartItemCount > 0 && (<span className="absolute -top-1 bg-black text-white text-xs rounded-full px-2 py-0.5">{cartItemCount}</span>)}
           
         </button>
         {/**search icon */}

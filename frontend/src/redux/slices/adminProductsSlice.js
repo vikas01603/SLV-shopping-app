@@ -70,19 +70,46 @@ const adminProductSlice = createSlice({
             state.error=action.payload.message;
         })
         //create product
+        .addCase(createProduct.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
         .addCase(createProduct.fulfilled, (state, action) => {
+            state.loading = false;
             state.products.push(action.payload);
         })
+        .addCase(createProduct.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message;
+        })
         //update product
+        .addCase(updateProduct.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
         .addCase(updateProduct.fulfilled, (state, action) => {
+            state.loading = false;
             const index = state.products.findIndex((product) => product._id === action.payload._id);
             if(index !== -1){
                 state.products[index] = action.payload;
             }
         })
+        .addCase(updateProduct.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message;
+        })
         //Delete products
+        .addCase(deleteProduct.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
         .addCase(deleteProduct.fulfilled, (state, action) => {
+            state.loading = false;
             state.products = state.products.filter((product) => product._id !== action.payload);
+        })
+        .addCase(deleteProduct.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message;
         })
     },
 });

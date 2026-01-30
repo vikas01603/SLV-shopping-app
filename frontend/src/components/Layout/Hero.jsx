@@ -1,25 +1,84 @@
-import React from 'react';
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import heroImg from "../../assets/hero-image.jpg";
-import { Link } from 'react-router-dom';
 
 const Hero = () => {
-  return (
-    <section className="relative">
-        <img src={heroImg} alt="SLV" className="w-full h-[400px] md:h-[600px] lg:h-[750px] object-cover"/>
+    
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.2,
+                duration: 0.8
+            }
+        }
+    };
 
-        <div className="absolute inset-0 bg-black bg-opacity-5 flex items-center justify-center">
-        <div className="text-center text-white  p-6">
-            <h1 className="text-4xl md:text-9xl font-bold tracking-tighter uppercase mb-4">Tradition
-                <br />Ready
-            </h1>
-            <p className="text-sm tracking-tighter md:text-lg mb-6">
-                Explore our traditional outfits with worldwide shipping.
-            </p>
-            <Link to="#" className="bg-white text-gray-950 px-6 py-2 rounded-sm text-lg">
-            Shop Now
-            </Link>
+    const itemVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.8,
+                ease: "easeOut"
+            }
+        }
+    };
+
+  return (
+    <section className="relative w-full md:h-screen overflow-hidden bg-neutral-900">
+        {/* Background Image */}
+        <div className="relative md:absolute inset-0 w-full h-auto md:h-full">
+             <img
+                src={heroImg}
+                alt="Shopping Hero"
+                className="w-full h-auto md:h-full md:object-cover object-contain"
+            />
+            {/* Overlay to ensure text readability */}
+             <div className="absolute inset-0 bg-black/50"></div>
         </div>
-        </div>
+
+      <motion.div 
+        className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center text-white px-4 sm:px-6 lg:px-8"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+          <motion.h1
+            variants={itemVariants}
+            whileHover={{ scale: 1.05, textShadow: "0px 0px 8px rgba(255,255,255,0.5)" }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="text-4xl sm:text-6xl lg:text-9xl font-bold tracking-tight mb-4 sm:mb-6 uppercase cursor-default"
+          >
+            Tradition <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-white">Ready</span>
+          </motion.h1>
+
+          <motion.p
+            variants={itemVariants}
+             className="text-base sm:text-xl lg:text-2xl text-gray-200 mb-8 sm:mb-12 max-w-lg sm:max-w-2xl font-light tracking-wide px-4"
+          >
+            Explore our traditional outfits with worldwide shipping.
+          </motion.p>
+          
+          <motion.div
+            variants={itemVariants}
+          >
+            <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-block"
+            >
+                <Link
+                to="/collections/all"
+                className="bg-white text-black px-12 py-4 rounded-full font-semibold text-lg shadow-2xl hover:bg-neutral-dark hover:text-white transition-all duration-300 transform border border-transparent hover:border-white"
+              >
+                Shop Now
+              </Link>
+            </motion.div>
+          </motion.div>
+      </motion.div>
     </section>
   );
 };

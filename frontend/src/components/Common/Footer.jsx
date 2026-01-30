@@ -3,91 +3,121 @@ import { IoLogoInstagram } from 'react-icons/io';
 import { RiTwitterXLine } from 'react-icons/ri';
 import { TbBrandMeta } from 'react-icons/tb';
 import { Link } from 'react-router-dom';
-import {FiPhoneCall} from "react-icons/fi"
+import { FaWhatsapp } from 'react-icons/fa';
+import { motion } from "framer-motion";
 
 const Footer = () => {
+    const footerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: {
+                duration: 0.6,
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 }
+    };
+
   return (
-    <footer className="border-t py-12">
-        <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-4 lg:px-0">
-            <div>
-                <h3 className="text-lg text-[#2B2B2B] mb-4">Newletter</h3>
-                <p className="text-gray-600 mb-4">Be the first to hear about our new collection, exclusive events, online offers.</p>
-                <p className="font-medium text-sm text-gray-600 mb-6">Sign up for exclusive deals.</p>
+    <footer className="bg-neutral-light dark:bg-neutral-dark border-t border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        <div className="container mx-auto px-6 lg:px-12 py-16">
+            <motion.div 
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 min-w-full"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={footerVariants}
+            >
+                
+                {/* Newsletter Section */}
+                <motion.div variants={itemVariants} className="col-span-1 md:col-span-2 lg:col-span-1">
+                    <h3 className="text-xl font-bold text-neutral-dark dark:text-white mb-6 uppercase tracking-wide">Newsletter</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+                        Be the first to hear about our new collections, exclusive events, and online offers.
+                    </p>
+                    <form className="flex flex-col gap-3">
+                        <input 
+                            type="email" 
+                            placeholder="Enter your email" 
+                            className="w-full p-3 text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all text-neutral-dark dark:text-white"
+                        />
+                         <button 
+                            type="submit" 
+                            className="bg-black text-white dark:bg-white dark:text-black px-6 py-3 text-sm font-medium rounded-md hover:bg-neutral-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap w-full"
+                         >
+                            Subscribe
+                         </button>
+                    </form>
+                </motion.div>
 
-                {/**NewsLetter form*/}
-                <form className="flex">
-                    <input type="email" placeholder="Enter your Email" className="p-3 w-full text-sm border-t border-l border-b
-                     border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all"/>
-                     <button type="submit" className="bg-black text-white px-6 py-3 text-sm rounded-r-md hover:bg-gray-800 transition-all">
-                        Subscribe
-                     </button>
-                </form>
-            </div>
-                {/**Shop links */}
-                <div>
-                    <h3 className="text-lg text-gray-800 mb-4">Shop</h3>
-                    <ul className="space-y-2 text-gray-600">
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">Sarees</Link>
-                    </li>
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">Dress</Link>
-                    </li>
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">Materials</Link>
-                    </li>
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">Top Wears</Link>
-                    </li>
+                {/* Shop Links */}
+                <motion.div variants={itemVariants}>
+                    <h3 className="text-lg font-bold text-neutral-dark dark:text-white mb-6 uppercase tracking-wide">Shop</h3>
+                    <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                        <li><Link to="/collections/all" className="hover:text-black dark:hover:text-white transition-colors">Sarees</Link></li>
+                        <li><Link to="/collections/all" className="hover:text-black dark:hover:text-white transition-colors">Dresses</Link></li>
+                        <li><Link to="/collections/all" className="hover:text-black dark:hover:text-white transition-colors">Materials</Link></li>
+                        <li><Link to="/collections/all" className="hover:text-black dark:hover:text-white transition-colors">Top Wear</Link></li>
                     </ul>
-                </div>
-                {/**Support Links bro */}
-                <div>
-                    <h3 className="text-lg text-gray-800 mb-4">Support</h3>
-                    <ul className="space-y-2 text-gray-600">
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">Contact Us</Link>
-                    </li>
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">About Us</Link>
-                    </li>
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">FAQs</Link>
-                    </li>
-                    <li>
-                        <Link to="#" className="hover:text-gray-500 transition-colors">Features</Link>
-                    </li>
+                </motion.div>
+
+                {/* Support Links */}
+                <motion.div variants={itemVariants}>
+                    <h3 className="text-lg font-bold text-neutral-dark dark:text-white mb-6 uppercase tracking-wide">Support</h3>
+                    <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                        <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">Contact Us</Link></li>
+                        <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">About Us</Link></li>
+                        <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">FAQs</Link></li>
+                        <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">Features</Link></li>
                     </ul>
-                </div>
-                {/** Follow us*/}
-                <div>
-                    <h3 className="text-lg text-gray-800 mb-4">Follow Us</h3>
-                    <div className="flex items-center space-x-4 mb-6">
-                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-500">
-                        <TbBrandMeta className="h-5 w-5"/>
+                </motion.div>
+
+                {/* Follow Us & Contact */}
+                <motion.div variants={itemVariants}>
+                    <h3 className="text-lg font-bold text-neutral-dark dark:text-white mb-6 uppercase tracking-wide">Follow Us</h3>
+                    <div className="flex items-center space-x-5 mb-8">
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black dark:hover:text-white transition-colors">
+                            <TbBrandMeta className="h-6 w-6"/>
                         </a>
-                        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-500">
-                        <IoLogoInstagram className="h-5 w-5"/>
+                        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black dark:hover:text-white transition-colors">
+                            <IoLogoInstagram className="h-6 w-6"/>
                         </a>
-                        <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-500">
-                        <RiTwitterXLine className="h-4 w-4"/>
+                        <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black dark:hover:text-white transition-colors">
+                            <RiTwitterXLine className="h-5 w-5"/>
                         </a>
                     </div>
+                    
                     <div>
-                        <p className="text-gray-500">Call Us</p>
-                        <p>
-                            <FiPhoneCall className="inline-block mr-2 "/>
-                            7337847118
-                        </p>
+                        <h4 className="text-sm font-semibold text-neutral-dark dark:text-white mb-2 uppercase">WhatsApp Support</h4>
+                        <a 
+                            href="https://wa.me/917337847118" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-gray-600 dark:text-gray-400 hover:text-[#25D366] transition-colors flex items-center gap-2 text-sm font-medium"
+                        >
+                            <FaWhatsapp className="h-4 w-4"/>
+                            Chat on WhatsApp
+                        </a>
                     </div>
-                </div>
+                </motion.div>
 
+            </motion.div>
         </div>
-        {/**Footerbuttom */}
-        <div className="container mx-auto mt-12 px-4 lg:px-0 border-gray-200 pt-6"></div>
-        <p className="text-gray-500 text;sm tracking-tighter text-center">
-            © 2026, SLV. All rights reserved.
-        </p>
+
+        {/* Footer Bottom */}
+        <div className="border-t border-gray-200 dark:border-gray-800">
+            <div className="container mx-auto px-6 py-8 flex flex-col md:flex-row justify-center items-center">
+                 <p className="text-gray-500 dark:text-gray-500 text-sm tracking-wide text-center">
+                    © 2026 SLV. All rights reserved. Built with precision.
+                </p>
+            </div>
+        </div>
     </footer>
   );
 };

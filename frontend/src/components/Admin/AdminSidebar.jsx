@@ -1,11 +1,12 @@
-import React from 'react'
-import { FaBoxOpen, FaClipboardList, FaSignLanguage, FaSignOutAlt, FaStore, FaUser } from 'react-icons/fa'
+import React from 'react';
+import { FaBoxOpen, FaClipboardList, FaSignOutAlt, FaStore, FaUser } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { logout } from '../../redux/slices/authSlice';
 import { clearCart } from '../../redux/slices/cartSlice';
+import logo from "../../assets/lotusBNw.JPG";
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ closeSidebar }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -13,51 +14,91 @@ const AdminSidebar = () => {
         dispatch(logout());
         dispatch(clearCart());
         navigate("/");
-    }
-  return (
-    <div className="p-6">
-        <div className="mb-6">
-            <Link to="/admin" className="text-2xl font-medium">SLV</Link>
-        </div>
-        <h2 className="text-xl font-medium mb-6 text-center">Admin Dashboard</h2>
-        <nav className="flex flex-col space-y-2">
-            <NavLink to="/admin/users" 
-            className={({isActive}) => isActive ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2" : 
-            "text-gray-300 hover:bg-gray-700 hover:text-white py-3  px-4 rounded flex items-center space-x-2"}>
-                <FaUser />
-                <span>Users</span>
-            </NavLink>
+    };
 
-            <NavLink to="/admin/products" 
-            className={({isActive}) => isActive ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2" : 
-            "text-gray-300 hover:bg-gray-700 hover:text-white py-3  px-4 rounded flex items-center space-x-2"}>
-                <FaBoxOpen />
-                <span>Products</span>
-            </NavLink>
-
-            <NavLink to="/admin/orders" 
-            className={({isActive}) => isActive ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2" : 
-            "text-gray-300 hover:bg-gray-700 hover:text-white py-3  px-4 rounded flex items-center space-x-2"}>
-                <FaClipboardList />
-                <span>Orders</span>
-            </NavLink>
-
-            <NavLink to="/" 
-            className={({isActive}) => isActive ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2" : 
-            "text-gray-300 hover:bg-gray-700 hover:text-white py-3  px-4 rounded flex items-center space-x-2"}>
-                <FaStore />
-                <span>Shop</span>
-            </NavLink>
-        </nav>
-        <div className="mt-6 ">
-            <button onClick={handleLogout} className="w-full bg-theme-gold hover:bg-yellow-600 text-blue-950 px-4 rounded flex items-center 
-            justify-center space-x-2 ">
-                <FaSignOutAlt/>
-                <span>Logout</span>
-            </button>
+    return (
+        <div className="h-full flex flex-col p-4 overflow-y-auto">
+            
+            {/* Logo / Header - Side-by-Side Layout */}
+            <div className="mb-8 border-b border-gray-100 pb-6 flex flex-col items-center">
+                 <Link to="/admin" className="group flex flex-col items-center" onClick={closeSidebar}>
+                    <div className="flex items-center gap-3">
+                        <img 
+                            src={logo} 
+                            alt="SLV Logo" 
+                            className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110"
+                        />
+                        <span className="text-2xl font-black tracking-tighter text-black uppercase leading-none">
+                            SLV
+                        </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.4em] mt-2 block pl-1">
+                        Admin Dashboard
+                    </span>
+                </Link>
             </div>
-    </div>
-  )
+
+            {/* Navigation - Cluster at top */}
+            <nav className="space-y-1">
+                <NavLink 
+                    to="/admin/users" 
+                    onClick={closeSidebar}
+                    className={({isActive}) => isActive 
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                        : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
+                    }
+                >
+                    <FaUser className="text-base opacity-80" />
+                    <span className="font-semibold tracking-tight text-sm">Users</span>
+                </NavLink>
+
+                <NavLink 
+                    to="/admin/products" 
+                    onClick={closeSidebar}
+                    className={({isActive}) => isActive 
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                        : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
+                    }
+                >
+                    <FaBoxOpen className="text-base opacity-80" />
+                    <span className="font-semibold tracking-tight text-sm">Catalog</span>
+                </NavLink>
+
+                <NavLink 
+                    to="/admin/orders" 
+                    onClick={closeSidebar}
+                    className={({isActive}) => isActive 
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                        : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
+                    }
+                >
+                    <FaClipboardList className="text-base opacity-80" />
+                    <span className="font-semibold tracking-tight text-sm">Orders</span>
+                </NavLink>
+
+                <NavLink 
+                    to="/" 
+                    onClick={closeSidebar}
+                    className={({isActive}) => isActive 
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]" 
+                        : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
+                    }
+                >
+                    <FaStore className="text-base opacity-80" />
+                    <span className="font-semibold tracking-tight text-sm">Store</span>
+                </NavLink>
+
+                {/* Logout - Now part of the main list */}
+                <button 
+                    onClick={handleLogout} 
+                    className="w-full text-gray-500 hover:bg-red-50 hover:text-red-500 py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200 mt-2"
+                >
+                    <FaSignOutAlt className="text-base opacity-80" />
+                    <span className="font-semibold tracking-tight text-sm">Logout</span>
+                </button>
+            </nav>
+        </div>
+    );
 }
 
-export default AdminSidebar
+export default AdminSidebar;

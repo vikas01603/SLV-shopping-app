@@ -13,7 +13,7 @@ const FilterSidebar = () => {
         material: [],
         brand:[],
         minPrice: 0,
-        maxPrice: 15000
+        maxPrice: 15000,
     });
 
     const [priceRange, setPriceRange] =useState([0,15000]);
@@ -79,51 +79,51 @@ const FilterSidebar = () => {
     }
 
   return (
-    <div className="p-5 bg-theme-gold rounded-2xl shadow-lg border border-gray-100 ml-3 mt-4 mb-6">
+    <div className="p-5 bg-neutral-dark dark:bg-neutral-dark rounded-xl shadow-sm border border-gray-100/10 ml-3 mt-4 mb-6 transition-colors duration-300">
 
-        <h3 className="text-2xl font-semibold text-gray-900 mb-6">
+        <h3 className="text-2xl font-bold text-white mb-6 tracking-tight">
             Filters
         </h3>
 
         {/* Category */}
         <div className="mb-7">
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Category</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Category</p>
             {categories.map(category => (
-                <label key={category} className="flex items-center gap-3 mb-2 cursor-pointer">
+                <label key={category} className="flex items-center gap-3 mb-2 cursor-pointer group">
                     <input
                         type="radio"
                         name="category"
                         value={category}
                         onChange={handleFilterChange}
                         checked={filters.category === category}
-                        className="h-4 w-4 accent-black focus:ring-black"
+                        className="h-4 w-4 accent-white focus:ring-white"
                     />
-                    <span className="text-gray-800">{category}</span>
+                    <span className="text-gray-300 group-hover:text-white transition-colors">{category}</span>
                 </label>
             ))}
         </div>
 
         {/* Gender */}
         <div className="mb-7">
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Gender</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Gender</p>
             {genders.map(gender => (
-                <label key={gender} className="flex items-center gap-3 mb-2 cursor-pointer">
+                <label key={gender} className="flex items-center gap-3 mb-2 cursor-pointer group">
                     <input
                         type="radio"
                         name="gender"
                         value={gender}
                         onChange={handleFilterChange}
                         checked={filters.gender === gender}
-                        className="h-4 w-4 accent-black focus:ring-black"
+                        className="h-4 w-4 accent-white focus:ring-white"
                     />
-                    <span className="text-gray-800">{gender}</span>
+                    <span className="text-gray-300 group-hover:text-white transition-colors">{gender}</span>
                 </label>
             ))}
         </div>
 
         {/* Color */}
         <div className="mb-7">
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Color</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Color</p>
             <div className="flex flex-wrap gap-3">
                 {colors.map(color => (
                     <button
@@ -131,9 +131,9 @@ const FilterSidebar = () => {
                         name="color"
                         value={color}
                         onClick={handleFilterChange}
-                        className={`w-9 h-9 rounded-full border shadow-sm transition-all
+                        className={`w-9 h-9 rounded-full border border-white/10 shadow-sm transition-all
                         hover:scale-110
-                        ${filters.color === color ? "ring-2 ring-offset-2 ring-black" : ""}`}
+                        ${filters.color === color ? "ring-2 ring-offset-2 ring-white ring-offset-neutral-dark" : ""}`}
                         style={{ backgroundColor: color.toLowerCase() }}
                     />
                 ))}
@@ -142,72 +142,72 @@ const FilterSidebar = () => {
 
         {/* Size */}
         <div className="mb-7">
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Size</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Size</p>
             {sizes.map(size => (
-                <label key={size} className="flex items-center gap-3 mb-2 cursor-pointer">
+                <label key={size} className="flex items-center gap-3 mb-2 cursor-pointer group">
                     <input
                         type="checkbox"
                         name="size"
                         value={size}
                         onChange={handleFilterChange}
                         checked={filters.size.includes(size)}
-                        className="h-4 w-4 accent-black focus:ring-black"
+                        className="h-4 w-4 accent-white focus:ring-white"
                     />
-                    <span className="text-gray-800">{size}</span>
+                    <span className="text-gray-300 group-hover:text-white transition-colors">{size}</span>
                 </label>
             ))}
         </div>
 
         {/* Material */}
         <div className="mb-7">
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Material</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Material</p>
             {materials.map(material => (
-                <label key={material} className="flex items-center gap-3 mb-2 cursor-pointer">
+                <label key={material} className="flex items-center gap-3 mb-2 cursor-pointer group">
                     <input
                         type="checkbox"
                         name="material"
                         value={material}
                         onChange={handleFilterChange}
                         checked={filters.material.includes(material)}
-                        className="h-4 w-4 accent-black focus:ring-black"
+                        className="h-4 w-4 accent-white focus:ring-white"
                     />
-                    <span className="text-gray-800">{material}</span>
+                    <span className="text-gray-300 group-hover:text-white transition-colors">{material}</span>
                 </label>
             ))}
         </div>
 
         {/* Brand */}
         <div className="mb-7">
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Brand</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Brand</p>
             {brands.map(brand => (
-                <label key={brand} className="flex items-center gap-3 mb-2 cursor-pointer">
+                <label key={brand} className="flex items-center gap-3 mb-2 cursor-pointer group">
                     <input
                         type="checkbox"
                         name="brand"
                         value={brand}
                         onChange={handleFilterChange}
                         checked={filters.brand.includes(brand)}
-                        className="h-4 w-4 accent-black focus:ring-black"
+                        className="h-4 w-4 accent-white focus:ring-white"
                     />
-                    <span className="text-gray-800">{brand}</span>
+                    <span className="text-gray-300 group-hover:text-white transition-colors">{brand}</span>
                 </label>
             ))}
         </div>
 
         {/* Price */}
         <div>
-            <p className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Price</p>
+            <p className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Price</p>
             <input
                 type="range"
                 min={0}
                 max={15000}
                 value={priceRange[1]}
                 onChange={handlePriceChange}
-                className="w-full accent-black"
+                className="w-full accent-white"
             />
-            <div className="flex justify-between text-sm text-gray-700 mt-2">
+            <div className="flex justify-between text-sm text-gray-400 mt-2 font-medium">
                 <span>₹0</span>
-                <span className="font-semibold">₹{priceRange[1]}</span>
+                <span className="text-white">₹{priceRange[1]}</span>
             </div>
         </div>
 

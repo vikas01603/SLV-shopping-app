@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllOrders, updateOrderStatus } from '../../redux/slices/adminOrderSlice';
-
+import { motion } from "framer-motion";
+import { FaCheckCircle } from "react-icons/fa";
 
 const OrderManagement = () => {
     
@@ -24,52 +25,111 @@ const OrderManagement = () => {
         dispatch(updateOrderStatus({id: orderId,status }));
     }
 
-    if(loading) return <p>Loading...</p>
-    if(error) return <p>Error: {error}</p>
+    const containerVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-6">Order Management</h2>
-        <div className="overflow-x-auto shadow-md sm:rounded-lg">
-            <table className="min-w-full text-left text-gray-500">
-                <thead className="bg-gray-100 text-xs uppercase text-gray-700">
-                    <tr>
-                        <th className="py-3 px-4">Order ID</th>
-                        <th className="py-3 px-4">Customer</th>
-                        <th className="py-3 px-4">Total Price</th>
-                        <th className="py-3 px-4">Status</th>
-                        <th className="py-3 px-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {orders.length>0? (
-                        orders.map((order) => <tr key={order._id} className="border-b hover:bg-gray-50 cursor-pointer">
-                            <td className="py-4 px-4 font-medium text-gray-900 whitespace-nowrap">#{order._id}</td>
-                            <td className="p-4">{order.user.name}</td>
-                            <td className="p-4">{order.totalPrice.toFixed(2)}</td>
-                            <td className="p-4">
-                                <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-                                focus:ring-black focus:border-black block p-2.5">
-
-                                    <option value="Processing">Processing</option>
-                                    <option value="Shipped">Shipped</option>
-                                    <option value="Delivered">Delivered</option>
-                                    <option value="Cancelled">Cancelled</option>
-                                </select>
-                            </td>
-                            <td className="p-4">
-                                <button onClick={() => handleStatusChange(order._id, "Delivered")} 
-                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Mark as Delivered</button>
-                            </td>
-                            <td className="p-4"></td>
-
-                        </tr>)
-                    ) : (<tr><td colSpan={5} className="p-4 text-center text-gray-500">No orders found.</td></tr>)}
-                </tbody>
-            </table>
+    <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-7xl mx-auto space-y-6"
+    >
+        {/* Header Section - Compact */}
+        <div className="px-1">
+            <h2 className="text-2xl font-bold text-black tracking-tight">Order Management</h2>
+            <p className="text-gray-400 text-xs font-medium mt-0.5 uppercase tracking-widest">
+                Customer transactions & fulfilment
+            </p>
         </div>
-    </div>
+
+        {/* Content Table - Compact */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+             {loading ? (
+                <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                </div>
+            ) : error ? (
+                <div className="p-6 text-red-500 text-sm font-medium">{error}</div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse table-fixed min-w-[800px]">
+                        <thead>
+                            <tr className="bg-gray-50/50 text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold">
+                                <th className="py-4 px-6 w-1/5">Ref</th>
+                                <th className="py-4 px-6 w-1/5">Customer</th>
+                                <th className="py-4 px-6 w-1/5">Amount</th>
+                                <th className="py-4 px-6 w-1/5">Status</th>
+                                <th className="py-4 px-6 w-1/5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {orders.length > 0 ? (
+                                orders.map((order) => (
+                                    <tr key={order._id} className="group hover:bg-gray-50/50 transition-colors">
+                                        <td className="py-4 px-6 font-mono text-[10px] text-gray-400 group-hover:text-black transition-colors truncate">
+                                            #{order._id.slice(-6).toUpperCase()}
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <div className="font-bold text-black text-sm truncate">{order.user.name}</div>
+                                            <div className="text-[9px] text-gray-400 font-medium uppercase truncate">{order.user.email}</div>
+                                        </td>
+                                        <td className="py-4 px-6 font-bold text-black text-sm">
+                                            ₹{order.totalPrice.toFixed(2)}
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <select 
+                                                value={order.status} 
+                                                onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                                                className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border-none outline-none cursor-pointer transition-colors max-w-full ${
+                                                    order.status === 'Delivered' 
+                                                    ? 'bg-emerald-50 text-emerald-600' 
+                                                    : order.status === 'Processing' 
+                                                    ? 'bg-blue-50 text-blue-600' 
+                                                    : order.status === 'Shipped'
+                                                    ? 'bg-orange-50 text-orange-600'
+                                                    : 'bg-red-50 text-red-600'
+                                                }`}
+                                            >
+                                                <option value="Processing">Processing</option>
+                                                <option value="Shipped">Shipped</option>
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                            </select>
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <div className="flex justify-end">
+                                                <button 
+                                                    onClick={() => handleStatusChange(order._id, "Delivered")} 
+                                                    disabled={order.status === "Delivered"}
+                                                    className={`px-3 py-1.5 rounded-lg text-[9px] font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap overflow-hidden ${
+                                                        order.status === "Delivered" 
+                                                        ? "bg-gray-50 text-gray-300 cursor-not-allowed" 
+                                                        : "bg-black text-white hover:bg-neutral-800 active:scale-95"
+                                                    }`}
+                                                >
+                                                    <FaCheckCircle size={10} className="flex-shrink-0" /> 
+                                                    <span className="truncate">Mark as Delivered</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="py-16 text-center text-gray-400 text-sm font-medium">
+                                        No orders found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    </motion.div>
   )
 }
 

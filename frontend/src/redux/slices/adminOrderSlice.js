@@ -85,16 +85,34 @@ const adminOrderSlice = createSlice({
             state.error = action.payload.message;
         })
         // update order status
+        .addCase(updateOrderStatus.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
         .addCase(updateOrderStatus.fulfilled, (state, action)=> {
+            state.loading = false;
             const updatedOrder = action.payload;
             const orderIndex = state.orders.findIndex((order) => order._id === updatedOrder._id);
             if(orderIndex !== -1){
                 state.orders[orderIndex] = updatedOrder;
             }
         })
+        .addCase(updateOrderStatus.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload.message;
+        })
         //Delete order
-        .addCase(deleteOrder.fulfilled, (state, actino) => {
+        .addCase(deleteOrder.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(deleteOrder.fulfilled, (state, action) => {
+            state.loading = false;
             state.orders = state.orders.filter((order) => order._id !== action.payload);
+        })
+        .addCase(deleteOrder.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload.message;
         })
     },
 });
