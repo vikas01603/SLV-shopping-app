@@ -5,14 +5,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
 import { fetchProductDetails, fetchSimilarProducts } from '../../redux/slices/productsSlice';
 import { addToCart } from '../../redux/slices/cartSlice';
+import { toggleWishlist } from '../../redux/slices/wishlistSlice';
 import { motion, AnimatePresence } from "framer-motion";
-import { FaShoppingCart, FaHeart, FaShare, FaChevronRight, FaMinus, FaPlus, FaRulerHorizontal, FaPalette } from "react-icons/fa";
+import { FaShoppingCart, FaHeart, FaRegHeart, FaShare, FaChevronRight, FaMinus, FaPlus, FaRulerHorizontal, FaPalette } from "react-icons/fa";
 
 const ProductDetails = ({ productId }) => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { selectedProduct, loading, error, similarProducts } = useSelector((state) => state.products);
     const { user, guestId } = useSelector((state) => state.auth);
+    const { wishlist } = useSelector((state) => state.wishlist);
 
     const [mainImage, setMainImage] = useState("");
     const [selectedSize, setSelectedSize] = useState("");
@@ -20,6 +22,7 @@ const ProductDetails = ({ productId }) => {
     const [quantity, setQuantity] = useState(1);
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [activeTab, setActiveTab] = useState("description");
+    const [isLiked, setIsLiked] = useState(false);
 
     const productColors = {
         "Red": "#EF4444",
@@ -68,6 +71,15 @@ const ProductDetails = ({ productId }) => {
         }
     }, [selectedProduct]);
 
+    useEffect(() => {
+        if (user && wishlist.length > 0 && selectedProduct) {
+            const isProductInWishlist = wishlist.some(item => item._id === selectedProduct._id);
+            setIsLiked(isProductInWishlist);
+        } else {
+            setIsLiked(false);
+        }
+    }, [wishlist, selectedProduct, user]);
+
     const handleQuantityChange = (action) => {
         if (action === "plus") setQuantity((prev) => prev + 1);
         if (action === "minus" && quantity > 1) setQuantity((prev) => prev - 1);
@@ -105,6 +117,23 @@ const ProductDetails = ({ productId }) => {
         setIsButtonDisabled(false);
     };
 
+    const handleWishlistToggle = () => {
+        if (!user) {
+            toast.error("Please login to add to wishlist");
+            return;
+        }
+        dispatch(toggleWishlist({
+            productId: selectedProduct._id,
+            product: selectedProduct
+        }));
+        setIsLiked(!isLiked); // Optimistic UI update
+        if (isLiked) {
+            toast.success("Removed from Wishlist");
+        } else {
+            toast.success("Added to Wishlist");
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -132,7 +161,7 @@ const ProductDetails = ({ productId }) => {
                     <nav className="flex mb-8 text-sm text-gray-500 items-center animate-fadeIn">
                         <Link to="/" className="hover:text-black transition-colors">Home</Link>
                         <FaChevronRight className="mx-2 text-xs" />
-                        <Link to="/collection/all" className="hover:text-black transition-colors">Shop</Link>
+                        <Link to="/collections/all" className="hover:text-black transition-colors">Shop</Link>
                         <FaChevronRight className="mx-2 text-xs" />
                         <span className="text-black font-medium truncate max-w-[200px]">{selectedProduct.name}</span>
                     </nav>
@@ -158,8 +187,8 @@ const ProductDetails = ({ productId }) => {
                                         <button className="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-sm hover:bg-black hover:text-white transition-all">
                                             <FaShare size={16} />
                                         </button>
-                                        <button className="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all">
-                                            <FaHeart size={16} />
+                                        <button onClick={handleWishlistToggle} className={`bg-white/90 backdrop-blur p-2.5 rounded-full shadow-sm hover:scale-110 transition-all ${isLiked ? 'text-red-500' : 'text-black hover:text-red-500'}`}>
+                                            {isLiked ? <FaHeart size={20} /> : <FaRegHeart size={20} />}
                                         </button>
                                     </div>
                                 </motion.div>

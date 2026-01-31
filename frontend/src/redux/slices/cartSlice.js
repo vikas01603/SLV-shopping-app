@@ -11,7 +11,14 @@ const loadCartFromStorage = () => {
     try {
         const serializedCart = localStorage.getItem("cart");
         if (serializedCart) {
-            return JSON.parse(serializedCart);
+            const parsedCart = JSON.parse(serializedCart);
+            // Handle different structure: storage might have 'products' but state needs 'cartItems'
+            const cartItems = parsedCart.products || parsedCart.cartItems || [];
+            return {
+                cartItems: cartItems,
+                totalPrice: parsedCart.totalPrice || 0,
+                totalItems: parsedCart.totalItems || 0, // In case it was stored, though we recompute usually
+            };
         }
     } catch (e) {
         console.warn("Could not load cart from local storage", e);
@@ -24,9 +31,7 @@ const loadCartFromStorage = () => {
 };
 
 const initialState = {
-    cartItems: [], 
-    totalPrice: 0,
-    totalItems: 0,
+    ...loadCartFromStorage(),
     loading: false,
     error: null,
 };
@@ -49,11 +54,11 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async ({ userId, gue
 export const addToCart = createAsyncThunk("cart/addToCart", async ({ userId, guestId, productId, _id, quantity, size, color }, { rejectWithValue }) => {
     try {
         const response = await axios.post(`${API_URL}/api/cart`, {
-            userId, 
-            guestId, 
+            userId,
+            guestId,
             productId: productId || _id, // Handle both payload structures
-            quantity, 
-            size, 
+            quantity,
+            size,
             color
         });
         return response.data;
@@ -88,9 +93,9 @@ export const removeFromCart = createAsyncThunk("cart/removeFromCart", async ({ u
 
 export const mergeCart = createAsyncThunk("cart/mergeCart", async ({ guestId, user }, { rejectWithValue }) => {
     try {
-        const response = await axios.post(`${API_URL}/api/cart/merge`, 
+        const response = await axios.post(`${API_URL}/api/cart/merge`,
             { guestId },
-            { headers: { Authorization: `Bearer ${localStorage.getItem("userToken")}` } } 
+            { headers: { Authorization: `Bearer ${localStorage.getItem("userToken")}` } }
         );
         return response.data;
     } catch (error) {
@@ -106,7 +111,7 @@ const cartSlice = createSlice({
             state.cartItems = [];
             state.totalPrice = 0;
             state.totalItems = 0;
-            localStorage.removeItem("cart"); 
+            localStorage.removeItem("cart");
         },
     },
     extraReducers: (builder) => {
@@ -118,22 +123,22 @@ const cartSlice = createSlice({
                 state.totalPrice = action.payload.totalPrice;
                 state.totalItems = action.payload.products.reduce((acc, item) => acc + item.quantity, 0);
             })
-            .addCase(fetchCart.rejected, (state, action) => { 
-                state.loading = false; 
-                state.error = action.payload?.message || "Failed to fetch cart"; 
+            .addCase(fetchCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to fetch cart";
             })
-            
+
             .addCase(addToCart.pending, (state) => { state.loading = true; state.error = null; })
             .addCase(addToCart.fulfilled, (state, action) => {
                 state.loading = false;
                 state.cartItems = action.payload.products;
                 state.totalPrice = action.payload.totalPrice;
                 state.totalItems = action.payload.products.reduce((acc, item) => acc + item.quantity, 0);
-                localStorage.setItem("cart", JSON.stringify(action.payload)); 
+                localStorage.setItem("cart", JSON.stringify(action.payload));
             })
             .addCase(addToCart.rejected, (state, action) => {
-                 state.loading = false; 
-                 state.error = action.payload?.message || "Failed to add to cart"; 
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to add to cart";
             })
 
             .addCase(updateCartItemQuantity.pending, (state) => { state.loading = true; state.error = null; })
@@ -142,11 +147,11 @@ const cartSlice = createSlice({
                 state.cartItems = action.payload.products;
                 state.totalPrice = action.payload.totalPrice;
                 state.totalItems = action.payload.products.reduce((acc, item) => acc + item.quantity, 0);
-                localStorage.setItem("cart", JSON.stringify(action.payload)); 
+                localStorage.setItem("cart", JSON.stringify(action.payload));
             })
-             .addCase(updateCartItemQuantity.rejected, (state, action) => {
-                 state.loading = false; 
-                 state.error = action.payload?.message || "Failed to update quantity"; 
+            .addCase(updateCartItemQuantity.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to update quantity";
             })
 
             .addCase(removeFromCart.pending, (state) => { state.loading = true; state.error = null; })
@@ -155,11 +160,11 @@ const cartSlice = createSlice({
                 state.cartItems = action.payload.products;
                 state.totalPrice = action.payload.totalPrice;
                 state.totalItems = action.payload.products.reduce((acc, item) => acc + item.quantity, 0);
-                localStorage.setItem("cart", JSON.stringify(action.payload)); 
+                localStorage.setItem("cart", JSON.stringify(action.payload));
             })
-             .addCase(removeFromCart.rejected, (state, action) => {
-                 state.loading = false; 
-                 state.error = action.payload?.message || "Failed to remove item"; 
+            .addCase(removeFromCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to remove item";
             })
 
             .addCase(mergeCart.pending, (state) => { state.loading = true; state.error = null; })
@@ -168,11 +173,11 @@ const cartSlice = createSlice({
                 state.cartItems = action.payload.products;
                 state.totalPrice = action.payload.totalPrice;
                 state.totalItems = action.payload.products.reduce((acc, item) => acc + item.quantity, 0);
-                localStorage.setItem("cart", JSON.stringify(action.payload)); 
+                localStorage.setItem("cart", JSON.stringify(action.payload));
             })
-             .addCase(mergeCart.rejected, (state, action) => { 
-                state.loading = false; 
-                state.error = action.payload?.message || "Failed to merge cart"; 
+            .addCase(mergeCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to merge cart";
             });
 
     }
