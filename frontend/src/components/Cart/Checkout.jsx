@@ -38,6 +38,31 @@ const Checkout = () => {
         }
     }, [cartItems, navigate, isOrdered]);
 
+    useEffect(() => {
+        if (user) {
+            // Split name into first and last name
+            const [firstName, ...lastNameParts] = user.name ? user.name.split(" ") : ["", ""];
+            const lastName = lastNameParts.join(" ");
+
+            setShippingAddress(prev => ({
+                ...prev,
+                firstName: prev.firstName || firstName || "", // Only overwrite if empty or keep existing? Usually overwrite if it's initial load. 
+                // Better logic: only set if state is empty to avoid overwriting user input?
+                // But user wants "default shipping address for the old user".
+                // So if we just loaded, we should probably set it. 
+                // Since this runs on mount (or user load), it's fine.
+                // Re-setting might be annoying if user is typing. 
+                // But [user] dependency changes rarely (on login/update).
+                lastName: prev.lastName || lastName || "",
+                address: user.address?.address || prev.address || "",
+                city: user.address?.city || prev.city || "",
+                postalCode: user.address?.postalCode || prev.postalCode || "",
+                country: user.address?.country || prev.country || "",
+                phone: user.phone || prev.phone || "",
+            }));
+        }
+    }, [user]);
+
     const handleCreateCheckout = async (e) => {
         e.preventDefault();
         if (cartItems && cartItems.length > 0) {
