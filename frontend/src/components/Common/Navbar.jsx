@@ -27,11 +27,11 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="container mx-auto flex items-center justify-between py-4 px-6">
+      <nav className="container mx-auto flex items-center justify-between py-4 px-4 md:px-6">
         {/** Left - Logo */}
         <div className="flex items-center space-x-2">
-          <img src={logo} alt="SLV Logo" className="h-8 w-auto" />
-          <Link to="/" className="text-2xl font-medium">SLV </Link>
+          <img src={logo} alt="SLV Logo" className="h-6 md:h-8 w-auto" />
+          <Link to="/" className="text-xl md:text-2xl font-medium">SLV </Link>
         </div>
         <div className="hidden md:flex space-x-6">
           <Link to="/collections/all?gender=Women" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">WOMENS</Link>
@@ -40,19 +40,23 @@ const Navbar = () => {
           <Link to="/collections/all?category=Bottom Wear" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">BOTTOM WEARS</Link>
         </div>
         {/** Right - Icons */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {user && user.role === "admin" && (<Link to="/admin" className="block bg-black px-2 rounded text-sm text-white">Admin</Link>)}
           <Link to="/profile" className="hover:text-[#B89B5E]">
-            <HiOutlineUser className='h-6 w-6 text-[#2B2B2B]' />
+            <HiOutlineUser className='h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]' />
           </Link>
 
           <button onClick={toggleCartDrawer} className="relative hover:text-[#B89B5E]">
-            <HiOutlineShoppingBag className="h-6 w-6 text-[#2B2B2B]" />
-            {cartItemCount > 0 && (<span className="absolute -top-1 bg-black text-white text-xs rounded-full px-2 py-0.5">{cartItemCount}</span>)}
+            <HiOutlineShoppingBag className="h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1 bg-black text-white text-[10px] md:text-xs rounded-full px-1.5 py-0.5 md:px-2">
+                {cartItemCount}
+              </span>
+            )}
 
           </button>
           <Link to="/wishlist" className="hover:text-[#B89B5E]">
-            <HiOutlineHeart className='h-6 w-6 text-[#2B2B2B]' />
+            <HiOutlineHeart className='h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]' />
           </Link>
           {/**search icon */}
           <SearchBar />

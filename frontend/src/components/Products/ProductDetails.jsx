@@ -9,7 +9,7 @@ import { toggleWishlist } from '../../redux/slices/wishlistSlice';
 import { motion, AnimatePresence } from "framer-motion";
 import { FaShoppingCart, FaHeart, FaRegHeart, FaShare, FaChevronRight, FaMinus, FaPlus, FaRulerHorizontal, FaPalette } from "react-icons/fa";
 
-const ProductDetails = ({ productId }) => {
+const ProductDetails = ({ productId, hideBreadcrumbs = false, isEmbedded = false }) => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { selectedProduct, loading, error, similarProducts } = useSelector((state) => state.products);
@@ -154,17 +154,19 @@ const ProductDetails = ({ productId }) => {
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className={`${isEmbedded ? 'w-full' : 'bg-gray-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8'} font-sans`}>
             {selectedProduct && (
                 <div className="max-w-7xl mx-auto">
                     {/* Breadcrumbs */}
-                    <nav className="flex mb-8 text-sm text-gray-500 items-center animate-fadeIn">
-                        <Link to="/" className="hover:text-black transition-colors">Home</Link>
-                        <FaChevronRight className="mx-2 text-xs" />
-                        <Link to="/collections/all" className="hover:text-black transition-colors">Shop</Link>
-                        <FaChevronRight className="mx-2 text-xs" />
-                        <span className="text-black font-medium truncate max-w-[200px]">{selectedProduct.name}</span>
-                    </nav>
+                    {!hideBreadcrumbs && (
+                        <nav className="flex mb-8 text-sm text-gray-500 items-center animate-fadeIn">
+                            <Link to="/" className="hover:text-black transition-colors">Home</Link>
+                            <FaChevronRight className="mx-2 text-xs" />
+                            <Link to="/collections/all" className="hover:text-black transition-colors">Shop</Link>
+                            <FaChevronRight className="mx-2 text-xs" />
+                            <span className="text-black font-medium truncate max-w-[200px]">{selectedProduct.name}</span>
+                        </nav>
+                    )}
 
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:gap-12 p-6 md:p-10">
@@ -400,10 +402,12 @@ const ProductDetails = ({ productId }) => {
                     </div>
 
                     {/* Similar Products */}
-                    <div className="mt-20 mb-16">
-                        <h2 className="text-3xl font-bold text-center mb-12 tracking-tight">You May Also Like</h2>
-                        <ProductGrid products={similarProducts} loading={loading} error={error} />
-                    </div>
+                    {!isEmbedded && (
+                        <div className="mt-20 mb-16">
+                            <h2 className="text-3xl font-bold text-center mb-12 tracking-tight">You May Also Like</h2>
+                            <ProductGrid products={similarProducts} loading={loading} error={error} />
+                        </div>
+                    )}
                 </div>
             )}
         </div>

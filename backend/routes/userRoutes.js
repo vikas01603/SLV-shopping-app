@@ -33,6 +33,8 @@ router.post("/register", async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    phone: user.phone,
+                    address: user.address,
                 },
                 token,
             })
@@ -72,6 +74,8 @@ router.post("/login", async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    phone: user.phone,
+                    address: user.address,
                 },
                 token,
             })
@@ -88,7 +92,52 @@ router.post("/login", async (req, res) => {
 //@access Private
 router.get("/profile", protect, async (req, res) => {
     res.json(req.user);
+});
 
+// @route PUT /api/users/profile
+// @desc Update user profile
+// @access Private
+router.put("/profile", protect, async (req, res) => {
+    const { name, phone, address, password } = req.body;
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.name = name || user.name;
+        user.phone = phone || user.phone;
+        user.address = address || user.address;
+
+        if (password) {
+            if (!req.body.currentPassword) {
+                return res.status(400).json({ message: "Current password is required to set a new password" });
+            }
+
+            const isMatch = await user.matchPassword(req.body.currentPassword);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Incorrect current password" });
+            }
+
+            user.password = password;
+        }
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            phone: updatedUser.phone,
+            address: updatedUser.address,
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
 

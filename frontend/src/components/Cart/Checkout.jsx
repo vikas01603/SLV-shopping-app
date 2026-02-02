@@ -16,7 +16,7 @@ const Checkout = () => {
     const { user } = useSelector((state) => state.auth);
 
     const cartTotal = cartItems ? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) : 0;
-    const shippingAmount = cartTotal > 2000 ? 0 : 80;
+    const shippingAmount = cartTotal >= 2000 ? 0 : 80;
     const finalTotal = cartTotal + shippingAmount;
 
     const [isOrdered, setIsOrdered] = useState(false);
