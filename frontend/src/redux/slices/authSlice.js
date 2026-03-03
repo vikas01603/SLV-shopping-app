@@ -44,6 +44,18 @@ export const registerUser = createAsyncThunk("auth/registerUser", async (userDat
     }
 });
 
+//Async Thunk for Google Login
+export const googleLoginUser = createAsyncThunk("auth/googleLoginUser", async (credentialData, { rejectWithValue }) => {
+    try {
+        const response = await axios.post(`${API_URL}/api/users/google-login`, credentialData);
+        localStorage.setItem("userInfo", JSON.stringify(response.data.user));
+        localStorage.setItem("userToken", response.data.token);
+        return response.data.user;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
 // Async Thunk for User Profile Update
 export const updateProfile = createAsyncThunk("auth/updateProfile", async (userData, { rejectWithValue }) => {
     try {
@@ -99,6 +111,18 @@ const authSlice = createSlice({
                 state.user = action.payload;
             })
             .addCase(registerUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            })
+            .addCase(googleLoginUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(googleLoginUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload;
+            })
+            .addCase(googleLoginUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;
             })

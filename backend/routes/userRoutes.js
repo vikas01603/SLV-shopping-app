@@ -2,8 +2,13 @@ const express = require("express");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const { protect } = require("../middleware/authMiddleware");
+const { OAuth2Client } = require("google-auth-library");
 
 const router = express.Router();
+
+// Initialize Google OAuth Client with the client ID used in the frontend
+// We can use the environment variable or hardcode it since it is public anyways.
+const googleClient = new OAuth2Client("677043176412-25gel7dvqkvho5ghes5r3jn5ao92og3f.apps.googleusercontent.com");
 
 // @route POST /api/users/register
 // @desc Register a new user
@@ -84,6 +89,54 @@ router.post("/login", async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send("Server Error");
+    }
+});
+
+// @route POST /api/users/google-login
+// @desc Authenticate a user with Google OAuth
+// @access Public
+router.post("/google-login", async (req, res) => {
+    const { credential } = req.body;
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: "677043176412-25gel7dvqkvho5ghes5r3jn5ao92og3f.apps.googleusercontent.com",
+        });
+        const payload = ticket.getPayload();
+        const { email, name } = payload;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create user if they don't exist
+            user = new User({
+                name: name,
+                email: email,
+                password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8), // Dummy password
+            });
+            await user.save();
+        }
+
+        // Create JWT Payload
+        const jwtPayload = { user: { id: user._id, role: user.role } };
+
+        jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: "400h" }, (err, token) => {
+            if (err) throw err;
+            res.json({
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    phone: user.phone,
+                    address: user.address,
+                },
+                token,
+            });
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Invalid Google Credential" });
     }
 });
 

@@ -2,12 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import register from "../assets/register.webp";
 import { useState } from 'react';
-import { registerUser } from "../redux/slices/authSlice";
+import { registerUser, googleLoginUser } from "../redux/slices/authSlice";
 import { useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { mergeCart } from '../redux/slices/cartSlice';
 import { useEffect } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
     const [email, setEmail] = useState("");
@@ -101,6 +102,23 @@ const Register = () => {
                     </div>
 
                     {error && <p className="mt-6 text-center text-red-500 text-sm font-medium bg-red-50 p-2 rounded-lg border border-red-100">{error}</p>}
+
+                    {/* Divider */}
+                    <div className="mt-6 flex items-center justify-center space-x-4">
+                        <div className="h-px bg-gray-300 w-full"></div>
+                        <span className="text-gray-500 text-sm font-medium">OR</span>
+                        <div className="h-px bg-gray-300 w-full"></div>
+                    </div>
+
+                    {/* Google Login Provider */}
+                    <div className="mt-6 flex justify-center">
+                        <GoogleLogin
+                            onSuccess={(credentialResponse) => {
+                                dispatch(googleLoginUser({ credential: credentialResponse.credential }));
+                            }}
+                            onError={() => console.log('Google Login Failed')}
+                        />
+                    </div>
 
                     <div className="mt-8 text-center">
                         <p className="text-sm text-gray-500">
