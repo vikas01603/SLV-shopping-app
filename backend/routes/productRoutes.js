@@ -235,9 +235,9 @@ router.get("/", async (req, res) => {
         //First fetch the products and apply sorting and limits
         let products;
         if (limit && Number(limit) > 0) {
-            products = await Product.find(query).sort(sort).limit(Number(limit));
+            products = await Product.find(query).sort(Object.keys(sort).length === 0 ? { createdAt: -1 } : sort).limit(Number(limit));
         } else {
-            products = await Product.find(query).sort(sort);
+            products = await Product.find(query).sort(Object.keys(sort).length === 0 ? { createdAt: -1 } : sort);
         }
         res.json(products);
 

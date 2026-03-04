@@ -265,7 +265,13 @@ const ProductDetails = ({ productId, hideBreadcrumbs = false, isEmbedded = false
                                                 {selectedProduct.colors.map((color) => (
                                                     <button
                                                         key={color}
-                                                        onClick={() => setSelectedColor(color)}
+                                                        onClick={() => {
+                                                            setSelectedColor(color);
+                                                            const colorIndex = selectedProduct.colors.indexOf(color);
+                                                            if (colorIndex !== -1 && selectedProduct.images[colorIndex]) {
+                                                                setMainImage(selectedProduct.images[colorIndex].url);
+                                                            }
+                                                        }}
                                                         className={`group relative h-10 w-10 rounded-full shadow-sm ring-1 ring-gray-200 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${selectedColor === color ? 'bg-white ring-2 ring-black ring-offset-2 scale-110' : ''}`}
                                                         title={color}
                                                     >

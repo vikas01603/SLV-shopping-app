@@ -1,18 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { HiOutlineUser, HiOutlineShoppingBag, HiBars3BottomRight, HiOutlineHeart } from "react-icons/hi2";
+import { HiOutlineUser, HiOutlineShoppingBag, HiBars3BottomRight, HiOutlineHeart, HiOutlineBell } from "react-icons/hi2";
 import SearchBar from './SearchBar';
 import CartDrawer from '../Layout/CartDrawer';
 import { IoMdClose } from 'react-icons/io';
 import logo from "../../assets/logo.jpeg";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchNotifications } from '../../redux/slices/notificationSlice';
 
 const Navbar = () => {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [navDrawerOpen, setNavDrawerOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const { cartItems } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
+  const { notifications } = useSelector((state) => state.notifications);
+  const dispatch = useDispatch();
+  const notificationRef = useRef(null);
+
+  useEffect(() => {
+    let intervalId;
+    if (user) {
+      dispatch(fetchNotifications());
+
+      // Poll every 3 seconds to keep notifications extremely immediate
+      intervalId = setInterval(() => {
+        dispatch(fetchNotifications());
+      }, 3000);
+    }
+
+    return () => clearInterval(intervalId);
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const unreadNotificationsCount = notifications?.filter(n => !n.isRead).length || 0;
 
   const cartItemCount = cartItems.reduce((total, product) =>
     total + product.quantity, 0) || 0;
@@ -23,6 +57,10 @@ const Navbar = () => {
 
   const toggleCartDrawer = () => {
     setDrawerOpen(!drawerOpen);
+  };
+
+  const toggleNotification = () => {
+    setNotificationOpen(!notificationOpen);
   };
 
   return (
@@ -42,6 +80,7 @@ const Navbar = () => {
         {/** Right - Icons */}
         <div className="flex items-center space-x-2 md:space-x-4">
           {user && user.role === "admin" && (<Link to="/admin" className="block bg-black px-2 rounded text-sm text-white">Admin</Link>)}
+
           <Link to="/profile" className="hover:text-[#B89B5E]">
             <HiOutlineUser className='h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]' />
           </Link>
@@ -58,6 +97,37 @@ const Navbar = () => {
           <Link to="/wishlist" className="hover:text-[#B89B5E]">
             <HiOutlineHeart className='h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]' />
           </Link>
+          <div className="relative" ref={notificationRef}>
+            <button onClick={toggleNotification} className="hover:text-[#B89B5E] flex items-center justify-center relative">
+              <HiOutlineBell className='h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]' />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#000000] text-white text-[10px] md:text-xs rounded-full px-1.5 py-0.5 md:px-2">
+                  {unreadNotificationsCount}
+                </span>
+              )}
+            </button>
+            {notificationOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-xl z-50 overflow-hidden">
+                <div className="p-4 border-b">
+                  <h3 className="text-lg font-semibold text-[#2B2B2B]">Notifications</h3>
+                </div>
+                <div className="p-4 text-sm text-center">
+                  {unreadNotificationsCount > 0
+                    ? <span className="text-gray-700">You have {unreadNotificationsCount} unread notification(s)</span>
+                    : <span className="text-gray-500">No new notifications</span>}
+                </div>
+                <div className="p-3 bg-gray-50 border-t">
+                  <Link
+                    to="/notifications"
+                    onClick={() => setNotificationOpen(false)}
+                    className="block w-full text-center text-sm text-[#000000] font-medium hover:underline"
+                  >
+                    View All Notifications
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
           {/**search icon */}
           <SearchBar />
           <button onClick={toggleNavDrawer} className="md:hidden">

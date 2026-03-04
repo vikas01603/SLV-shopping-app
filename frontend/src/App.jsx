@@ -19,6 +19,7 @@ import EditProductPage from "./components/Admin/EditProductPage";
 import CreateProductPage from "./components/Admin/CreateProductPage";
 import OrderManagement from "./components/Admin/OrderManagement";
 import Wishlist from "./pages/Wishlist";
+import NotificationsPage from "./pages/NotificationsPage";
 
 import { Provider } from "react-redux";
 import store from "./redux/store";
@@ -46,6 +47,7 @@ const App = () => {
             <Route path="order/:id" element={<OrderDetailsPage />} />
             <Route path="my-orders" element={<MyOrdersPage />} />
             <Route path="wishlist" element={<Wishlist />} />
+            <Route path="notifications" element={<NotificationsPage />} />
           </Route>
 
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
