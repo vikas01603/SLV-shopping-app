@@ -18,8 +18,13 @@ import ProductManagement from "./components/Admin/ProductManagement";
 import EditProductPage from "./components/Admin/EditProductPage";
 import CreateProductPage from "./components/Admin/CreateProductPage";
 import OrderManagement from "./components/Admin/OrderManagement";
+import AdminChat from "./components/Admin/AdminChat";
 import Wishlist from "./pages/Wishlist";
 import NotificationsPage from "./pages/NotificationsPage";
+import AboutUs from "./pages/AboutUs";
+import FAQs from "./pages/FAQs";
+import Features from "./pages/Features";
+import ContactUs from "./pages/ContactUs";
 
 import { Provider } from "react-redux";
 import store from "./redux/store";
@@ -48,6 +53,10 @@ const App = () => {
             <Route path="my-orders" element={<MyOrdersPage />} />
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="about-us" element={<AboutUs />} />
+            <Route path="faqs" element={<FAQs />} />
+            <Route path="features" element={<Features />} />
+            <Route path="contact-us" element={<ContactUs />} />
           </Route>
 
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
@@ -57,6 +66,7 @@ const App = () => {
             <Route path="products/create" element={<CreateProductPage />} />
             <Route path="products/:id/edit" element={<EditProductPage />} />
             <Route path="orders" element={<OrderManagement />} />
+            <Route path="chat" element={<AdminChat />} />
 
           </Route>
 

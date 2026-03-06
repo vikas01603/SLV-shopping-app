@@ -26,7 +26,7 @@ const SearchBar = () => {
         <div className="flex items-center justify-center">
             {/* Search Toggle Button */}
             <button onClick={handelSearchToggle} className="hover:text-black">
-                <HiMagnifyingGlass className="h-6 w-6 text-[#2B2B2B]" />
+                <HiMagnifyingGlass className="h-5 w-5 md:h-6 md:w-6 text-[#2B2B2B]" />
             </button>
 
             {/* Search Overlay */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBoxOpen, FaClipboardList, FaSignOutAlt, FaStore, FaUser } from 'react-icons/fa';
+import { FaBoxOpen, FaClipboardList, FaSignOutAlt, FaStore, FaUser, FaCommentDots } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { logout } from '../../redux/slices/authSlice';
@@ -74,6 +74,18 @@ const AdminSidebar = ({ closeSidebar }) => {
                 >
                     <FaClipboardList className="text-base opacity-80" />
                     <span className="font-semibold tracking-tight text-sm">Orders</span>
+                </NavLink>
+
+                <NavLink
+                    to="/admin/chat"
+                    onClick={closeSidebar}
+                    className={({ isActive }) => isActive
+                        ? "bg-black text-white py-2.5 px-4 rounded-xl flex items-center space-x-3 shadow-md transition-all duration-300 transform scale-[1.01]"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-black py-2.5 px-4 rounded-xl flex items-center space-x-3 transition-all duration-200"
+                    }
+                >
+                    <FaCommentDots className="text-base opacity-80" />
+                    <span className="font-semibold tracking-tight text-sm">Support Chat</span>
                 </NavLink>
 
                 <NavLink

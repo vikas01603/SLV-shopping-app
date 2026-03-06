@@ -5,6 +5,7 @@ import Header from "../Common/Header";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchWishlist } from "../../redux/slices/wishlistSlice";
 import { fetchCart } from "../../redux/slices/cartSlice";
+import ChatWidget from "../Chat/ChatWidget";
 
 const UserLayout = () => {
   const dispatch = useDispatch();
@@ -32,6 +33,8 @@ const UserLayout = () => {
       </main>
       {/* Footer */}
       <Footer />
+      {/* Floating Support Chat Widget */}
+      <ChatWidget />
     </>
   );
 };

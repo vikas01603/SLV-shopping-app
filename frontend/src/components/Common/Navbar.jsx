@@ -78,7 +78,7 @@ const Navbar = () => {
           <Link to="/collections/all?category=Bottom Wear" className="text-[#2B2B2B] hover:text-[#B89B5E] text-sm font-medium uppercase">BOTTOM WEARS</Link>
         </div>
         {/** Right - Icons */}
-        <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-6">
           {user && user.role === "admin" && (<Link to="/admin" className="block bg-black px-2 rounded text-sm text-white">Admin</Link>)}
 
           <Link to="/profile" className="hover:text-[#B89B5E]">
@@ -131,7 +131,7 @@ const Navbar = () => {
           {/**search icon */}
           <SearchBar />
           <button onClick={toggleNavDrawer} className="md:hidden">
-            <HiBars3BottomRight className="h-6 w-6 text-[#2B2B2B] " />
+            <HiBars3BottomRight className="h-5 w-5 text-[#2B2B2B]" />
           </button>
         </div>
       </nav>

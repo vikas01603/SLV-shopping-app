@@ -71,13 +71,11 @@ const Footer = () => {
                     <motion.div variants={itemVariants}>
                         <h3 className="text-lg font-bold text-neutral-dark dark:text-white mb-6 uppercase tracking-wide">Support</h3>
                         <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-                            <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">Contact Us</Link></li>
-                            <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">About Us</Link></li>
-                            <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">FAQs</Link></li>
-                            <li><Link to="#" className="hover:text-black dark:hover:text-white transition-colors">Features</Link></li>
+                            <li><Link to="/about-us" className="hover:text-black dark:hover:text-white transition-colors">About Us</Link></li>
+                            <li><Link to="/faqs" className="hover:text-black dark:hover:text-white transition-colors">FAQs</Link></li>
+                            <li><Link to="/features" className="hover:text-black dark:hover:text-white transition-colors">Features</Link></li>
                         </ul>
                     </motion.div>
-
                     {/* Follow Us & Contact */}
                     <motion.div variants={itemVariants}>
                         <h3 className="text-lg font-bold text-neutral-dark dark:text-white mb-6 uppercase tracking-wide">Follow Us</h3>
