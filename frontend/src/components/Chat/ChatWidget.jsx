@@ -276,11 +276,11 @@ const ChatWidget = () => {
             senderType: 'User',
             message: newMessage,
             messageType: attachment ? attachment.type : 'text',
-            fileUrl: attachment?.url || null,
-            fileName: attachment?.name || null,
-            fileSize: attachment?.size || null,
-            mimeType: attachment?.mimeType || null,
-            replyTo: replyingTo?._id || null
+            ...(attachment?.url && { fileUrl: attachment.url }),
+            ...(attachment?.name && { fileName: attachment.name }),
+            ...(attachment?.size && { fileSize: attachment.size }),
+            ...(attachment?.mimeType && { mimeType: attachment.mimeType }),
+            ...(replyingTo && { replyTo: replyingTo._id })
         };
 
         socket.emit('send_message', msgData);
@@ -631,7 +631,7 @@ const ChatWidget = () => {
                                     value={newMessage}
                                     onChange={handleTyping}
                                     onKeyDown={handleKeyDown}
-                                    disabled={(!newMessage.trim() && !attachment) || uploading}
+                                    disabled={uploading}
                                     placeholder={uploading ? `Uploading ${uploadProgress}%...` : "Message support..."}
                                     className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] max-h-28 min-h-[44px] resize-none py-3 outline-none custom-scrollbar placeholder:text-gray-400 self-center"
                                     rows="1"

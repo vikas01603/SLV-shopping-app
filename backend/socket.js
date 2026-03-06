@@ -35,6 +35,7 @@ module.exports = (io) => {
 
         // Handle sending a message
         socket.on('send_message', async (data) => {
+            console.log("Received send_message Payload:", data);
             const { roomId, sender, senderType, message, messageType, fileUrl, fileName, fileSize, mimeType, replyTo } = data;
 
             try {

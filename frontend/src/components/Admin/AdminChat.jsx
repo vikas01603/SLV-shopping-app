@@ -302,11 +302,11 @@ const AdminChat = () => {
             senderType: 'Admin',
             message: newMessage,
             messageType: attachment ? attachment.type : 'text',
-            fileUrl: attachment?.url || null,
-            fileName: attachment?.name || null,
-            fileSize: attachment?.size || null,
-            mimeType: attachment?.mimeType || null,
-            replyTo: replyingTo?._id || null
+            ...(attachment?.url && { fileUrl: attachment.url }),
+            ...(attachment?.name && { fileName: attachment.name }),
+            ...(attachment?.size && { fileSize: attachment.size }),
+            ...(attachment?.mimeType && { mimeType: attachment.mimeType }),
+            ...(replyingTo && { replyTo: replyingTo._id })
         };
 
         socket.emit('send_message', msgData);
@@ -735,7 +735,7 @@ const AdminChat = () => {
                                     value={newMessage}
                                     onChange={handleTyping}
                                     onKeyDown={handleKeyDown}
-                                    disabled={(!newMessage.trim() && !attachment) || uploading}
+                                    disabled={uploading}
                                     placeholder={uploading ? `Uploading ${uploadProgress}%...` : "Message..."}
                                     className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 sm:px-5 py-2.5 sm:py-3.5 min-h-[46px] sm:min-h-[52px] max-h-32 sm:max-h-36 h-[46px] sm:h-[52px] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black/20 focus:bg-white transition-all custom-scrollbar flex items-center self-center text-[13px] sm:text-[14px]"
                                 />
