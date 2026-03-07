@@ -3,13 +3,26 @@ import axios from 'axios';
 import imageCompression from 'browser-image-compression';
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
-import { HiPaperAirplane, HiOutlineUserCircle, HiOutlinePaperClip, HiOutlineChatBubbleLeftEllipsis } from "react-icons/hi2";
+import { HiPaperAirplane, HiOutlineUserCircle, HiOutlinePaperClip, HiOutlineChatBubbleLeftEllipsis, HiOutlinePhoto } from "react-icons/hi2";
 import { HiOutlineEmojiHappy, HiDotsVertical, HiX, HiOutlineReply, HiOutlineSearch, HiOutlineDocumentDuplicate, HiOutlineTrash, HiArrowLeft } from "react-icons/hi";
 import EmojiPicker from 'emoji-picker-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import confetti from 'canvas-confetti';
+import { HiCheckCircle, HiClock, HiEnvelopeOpen } from 'react-icons/hi2';
 
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+// Use environment variable for backend URL, fallback to window.location if deployed on same domain
+const getBackendUrl = () => {
+    let url = import.meta.env.VITE_BACKEND_URL || (window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : ""));
+    return url.endsWith('/') ? url.slice(0, -1) : url;
+};
+const SOCKET_URL = getBackendUrl();
+const getFullUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${SOCKET_URL}${cleanPath}`;
+};
 
 const playPopSound = () => {
     try {
@@ -58,18 +71,37 @@ const AdminChat = () => {
 
     // Online tracking state map
     const [onlineUsers, setOnlineUsers] = useState({});
+    const [lastSeenMap, setLastSeenMap] = useState({});
+
+    const [showGallery, setShowGallery] = useState(false);
+    const [isLoadingRooms, setIsLoadingRooms] = useState(true);
+    const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+    const [roomSearch, setRoomSearch] = useState("");
 
     const chatContainerRef = useRef(null);
     const messagesEndRef = useRef(null);
 
+    // Click outside handler for menus
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (activeMenu) setActiveMenu(null);
+            if (showHeaderMenu) setShowHeaderMenu(false);
+        };
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, [activeMenu, showHeaderMenu]);
+
     useEffect(() => {
         const fetchRooms = async () => {
             try {
+                setIsLoadingRooms(true);
                 const config = { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } };
                 const res = await axios.get(`${SOCKET_URL}/api/chat/all-rooms`, config);
                 setRooms(res.data);
             } catch (err) {
                 console.error("Error fetching rooms", err);
+            } finally {
+                setIsLoadingRooms(false);
             }
         };
         fetchRooms();
@@ -78,11 +110,14 @@ const AdminChat = () => {
     useEffect(() => {
         if (!user || user.role !== 'admin') return;
 
-        const newSocket = io(SOCKET_URL, { transports: ["websocket"] });
+        const newSocket = io(SOCKET_URL, {
+            transports: ["polling", "websocket"],
+            auth: { token: localStorage.getItem('userToken') }
+        });
         setSocket(newSocket);
 
         // Let backend know we are online admin
-        newSocket.emit('user_connect', { userId: user._id, role: 'admin' });
+        newSocket.emit('user_connect');
 
         newSocket.on('admin_room_update', (updatedRoom) => {
             setRooms((prevRooms) => {
@@ -139,6 +174,27 @@ const AdminChat = () => {
             });
         });
 
+        socket.on('message_status_update', (data) => {
+            setMessages(prev => prev.map(m => m._id === data.messageId ? { ...m, status: data.status } : m));
+        });
+
+        socket.on('room_status_updated', (data) => {
+            if (selectedRoom && selectedRoom._id === data.roomId) {
+                setSelectedRoom(prev => ({ ...prev, chatStatus: data.status }));
+            }
+            // Rooms list will be updated by admin_room_update event
+        });
+
+        socket.on('message_sent', (msg) => {
+            if (selectedRoom && msg.room === selectedRoom._id) {
+                setMessages(prev => {
+                    const exists = prev.find(m => m._id === msg._id);
+                    if (exists) return prev;
+                    return [...prev, msg];
+                });
+            }
+        });
+
         socket.on('message_reaction', (data) => {
             setMessages(prev => prev.map(m => m._id === data.messageId ? { ...m, reactions: data.reactions } : m));
         });
@@ -156,37 +212,41 @@ const AdminChat = () => {
             socket.off('conversation_deleted');
             socket.off('message_reaction');
             socket.off('user_status_change');
+            socket.off('room_status_updated');
         };
     }, [socket, selectedRoom]);
 
     useEffect(() => {
-        if (selectedRoom && socket) {
-            const fetchMessages = async () => {
-                try {
-                    const config = { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } };
-                    const res = await axios.get(`${SOCKET_URL}/api/chat/${selectedRoom._id}/messages?page=1&limit=30`, config);
+        const fetchMessages = async () => {
+            if (!selectedRoom) return;
+            try {
+                setIsLoadingMessages(true);
+                const config = { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } };
+                const res = await axios.get(`${SOCKET_URL}/api/chat/${selectedRoom._id}/messages?page=1&limit=30`, config);
 
-                    setMessages(res.data.messages || []);
-                    setPage(res.data.page);
-                    setHasMore(res.data.page < res.data.pages);
+                setMessages(res.data.messages || []);
+                setPage(res.data.page);
+                setHasMore(res.data.page < res.data.pages);
 
+                if (socket) {
                     socket.emit('join_room', selectedRoom._id);
                     socket.emit('mark_read', { roomId: selectedRoom._id, readerType: 'Admin' });
-
-                    setRooms(prev => prev.map(r => r._id === selectedRoom._id ? { ...r, unreadCountAdmin: 0 } : r));
-
-                    setActiveMenu(null);
-                    setReplyingTo(null);
-                    setEditingMsg(null);
-                    setAttachment(null);
-                    setNewMessage("");
-
-                } catch (error) {
-                    console.error("Failed to fetch messages", error);
                 }
-            };
-            fetchMessages();
-        }
+
+                setRooms(prev => prev.map(r => r._id === selectedRoom._id ? { ...r, unreadCountAdmin: 0 } : r));
+
+                setActiveMenu(null);
+                setReplyingTo(null);
+                setEditingMsg(null);
+                setAttachment(null);
+                setNewMessage("");
+            } catch (err) {
+                console.error("Error fetching messages", err);
+            } finally {
+                setIsLoadingMessages(false);
+            }
+        };
+        fetchMessages();
     }, [selectedRoom, socket]);
 
     const handleScroll = async (e) => {
@@ -314,7 +374,7 @@ const AdminChat = () => {
         setAttachment(null);
         setReplyingTo(null);
         setShowEmojiPicker(false);
-        socket.emit('typing', { roomId: selectedRoom._id, senderType: 'Admin', isTyping: false });
+        socket.emit('typing_stop', { roomId: selectedRoom._id, senderType: 'Admin' });
     };
 
     const handleKeyDown = (e) => {
@@ -327,7 +387,50 @@ const AdminChat = () => {
     const handleTyping = (e) => {
         setNewMessage(e.target.value);
         if (socket && selectedRoom) {
-            socket.emit('typing', { roomId: selectedRoom._id, senderType: 'Admin', isTyping: e.target.value.length > 0 });
+            socket.emit('typing_start', { roomId: selectedRoom._id, senderType: 'Admin' });
+
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => {
+                socket.emit('typing_stop', { roomId: selectedRoom._id, senderType: 'Admin' });
+            }, 2000);
+        }
+    };
+
+    const typingTimeoutRef = useRef(null);
+
+    const updateChatStatus = async (status) => {
+        if (!socket || !selectedRoom) return;
+        try {
+            const config = { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } };
+            await axios.put(`${SOCKET_URL}/api/chat/${selectedRoom._id}/status`, { status }, config);
+
+            socket.emit('update_room_status', { roomId: selectedRoom._id, status });
+
+            setSelectedRoom(prev => ({ ...prev, chatStatus: status }));
+            setRooms(prev => prev.map(r => r._id === selectedRoom._id ? { ...r, chatStatus: status } : r));
+        } catch (err) {
+            console.error("Failed to update status", err);
+        }
+    };
+
+    const handleSearch = async (e) => {
+        const query = e.target.value;
+        setSearchTerm(query);
+        if (query.length > 2) {
+            try {
+                const config = { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } };
+                const res = await axios.get(`${SOCKET_URL}/api/chat/search?query=${query}`, config);
+                if (selectedRoom) {
+                    const results = res.data.filter(m => (m.room._id || m.room) === selectedRoom._id);
+                    setMessages(prev => {
+                        const existingIds = new Set(prev.map(m => m._id));
+                        const newMsgs = results.filter(m => !existingIds.has(m._id));
+                        return [...prev, ...newMsgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    });
+                }
+            } catch (err) {
+                console.error("Search failed", err);
+            }
         }
     };
 
@@ -380,30 +483,42 @@ const AdminChat = () => {
     };
 
     const filteredMessages = messages
-        .filter(m => !(m.isDeleted && !m.deletedForEveryone && m.deletedBy === 'Admin'))
-        .filter(m => m.message?.toLowerCase().includes(searchTerm.toLowerCase()));
+        .filter(m => !(m.isDeleted && !m.deletedForEveryone && m.deletedBy === 'Admin'));
 
     return (
         <div className="flex h-[calc(100vh-100px)] min-h-[500px] bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 overflow-hidden font-sans relative">
             <div className={`w-full md:w-[320px] md:min-w-[320px] border-r border-gray-100 bg-gray-50 flex-col z-10 shadow-[2px_0_15px_rgba(0,0,0,0.02)] ${selectedRoom ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-5 border-b border-gray-100 bg-white">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-3">
                         <button onClick={() => navigate('/admin')} className="md:hidden p-1.5 -ml-1.5 text-gray-500 hover:text-black hover:bg-gray-100 rounded-full transition-all">
                             <HiArrowLeft className="w-5 h-5" />
                         </button>
                         <h2 className="text-xl font-bold tracking-tight text-gray-900">Support Chats</h2>
                     </div>
-                    <p className="text-xs text-gray-500">Manage all customer inquiries here</p>
+                    <div className="relative">
+                        <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <input
+                            type="text"
+                            placeholder="Find a customer..."
+                            value={roomSearch}
+                            onChange={(e) => setRoomSearch(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2 pl-9 pr-4 text-sm focus:ring-2 focus:ring-black/5 outline-none transition-all placeholder:text-gray-400"
+                        />
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/50">
-                    {rooms.length === 0 ? (
+                    {isLoadingRooms ? (
+                        <div className="p-4 space-y-4">
+                            {[1, 2, 3, 4].map(n => <div key={n} className="h-16 bg-gray-200 animate-pulse rounded-xl" />)}
+                        </div>
+                    ) : rooms.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-gray-400 p-6 text-center">
                             <HiOutlineChatBubbleLeftEllipsis className="w-12 h-12 mb-3 opacity-20" />
                             <p className="font-medium text-gray-500">No active chats.</p>
                             <p className="text-xs mt-1">Incoming conversations will appear here.</p>
                         </div>
-                    ) : (rooms.map(room => {
+                    ) : (rooms.filter(r => r.user?.name?.toLowerCase().includes(roomSearch.toLowerCase())).map(room => {
                         const isUserOnline = onlineUsers[room.user?._id];
 
                         return (
@@ -421,10 +536,31 @@ const AdminChat = () => {
                                     </div>
 
                                     <div className="overflow-hidden flex flex-col justify-center flex-1 pr-2">
-                                        <h4 className={`font-semibold text-sm truncate transition-colors ${selectedRoom?._id === room._id ? 'text-white' : 'text-gray-900'}`}>{room.user?.name || "Unknown User"}</h4>
+                                        <div className="flex items-center justify-between">
+                                            <h4 className={`font-semibold text-sm truncate transition-colors ${selectedRoom?._id === room._id ? 'text-white' : 'text-gray-900'}`}>{room.user?.name || "Unknown User"}</h4>
+                                            <AnimatePresence mode="wait">
+                                                <motion.span
+                                                    key={room.chatStatus}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase ${room.chatStatus === 'Resolved' ? 'bg-green-500/20 text-green-500' : room.chatStatus === 'Pending' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-blue-500/20 text-blue-500'}`}>
+                                                    {room.chatStatus || 'Open'}
+                                                </motion.span>
+                                            </AnimatePresence>
+                                        </div>
                                         <p className={`text-[12px] truncate transition-colors max-w-full ${selectedRoom?._id === room._id ? 'text-gray-400' : 'text-gray-500'}`}>
                                             {room.lastMessage || "Started a chat"}
                                         </p>
+                                        {!isUserOnline && room.user?.lastSeen && (
+                                            <span className={`text-[9px] font-medium ${selectedRoom?._id === room._id ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                Seen {new Date(room.user.lastSeen).toLocaleDateString() === new Date().toLocaleDateString() ? new Date(room.user.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'yesterday'}
+                                            </span>
+                                        )}
+                                        {!isUserOnline && !room.user?.lastSeen && (
+                                            <span className={`text-[9px] font-medium ${selectedRoom?._id === room._id ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                Offline
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end justify-between h-full py-1">
@@ -446,7 +582,7 @@ const AdminChat = () => {
             <div className={`flex-1 flex-col bg-white relative ${selectedRoom ? 'flex' : 'hidden md:flex'}`}>
                 {selectedRoom ? (
                     <>
-                        <div className="p-4 border-b border-gray-100 shadow-sm z-20 bg-white flex flex-col relative w-full overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 shadow-sm z-20 bg-white flex flex-col relative w-full">
                             <div className="flex justify-between items-center w-full">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-3">
@@ -463,15 +599,33 @@ const AdminChat = () => {
                                     </div>
 
                                     <div className="flex items-center gap-2 relative">
+                                        <button onClick={() => setShowGallery(!showGallery)} className="w-10 h-10 bg-gray-50 text-gray-400 hover:text-black flex items-center justify-center rounded-full transition-all" title="View Gallery">
+                                            <HiOutlinePhoto className="w-5 h-5" />
+                                        </button>
                                         <button onClick={() => setShowSearch(!showSearch)} className="w-10 h-10 bg-gray-50 text-gray-400 hover:text-black flex items-center justify-center rounded-full transition-all">
                                             <HiOutlineSearch className="w-5 h-5" />
                                         </button>
-                                        <button onClick={() => setShowHeaderMenu(!showHeaderMenu)} className="w-10 h-10 bg-gray-50 text-gray-400 hover:text-black flex items-center justify-center rounded-full transition-all">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setShowHeaderMenu(!showHeaderMenu); }}
+                                            className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${showHeaderMenu ? 'bg-black text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
+                                        >
                                             <HiDotsVertical className="w-5 h-5" />
                                         </button>
                                         <AnimatePresence>
                                             {showHeaderMenu && (
-                                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute right-0 top-12 bg-white shadow-xl shadow-black/5 border border-gray-100 rounded-xl w-48 py-1.5 z-[100]">
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                    className="absolute right-0 top-12 bg-white shadow-2xl border border-gray-100 rounded-2xl w-56 py-2 z-[9999] pointer-events-auto"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <div className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Update Status</div>
+                                                    <button onClick={() => { updateChatStatus('Open'); setShowHeaderMenu(false); }} className="w-full text-left px-5 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors">Mark as Open</button>
+                                                    <button onClick={() => { updateChatStatus('Pending'); setShowHeaderMenu(false); }} className="w-full text-left px-5 py-2 text-sm text-yellow-600 hover:bg-yellow-50 transition-colors">Mark as Pending</button>
+                                                    <button onClick={() => { updateChatStatus('Resolved'); setShowHeaderMenu(false); }} className="w-full text-left px-5 py-2 text-sm text-green-600 hover:bg-green-50 transition-colors">Mark as Resolved</button>
+                                                    <div className="my-2 border-t border-gray-50"></div>
+                                                    <a href={`${SOCKET_URL}/api/chat/${selectedRoom._id}/export`} className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors font-medium">Export Chat Logic</a>
                                                     <button onClick={() => { setShowHeaderMenu(false); setShowDeleteModal(true); }} className="w-full text-left px-5 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors font-medium">
                                                         <HiOutlineTrash className="w-4 h-4" /> Delete Conversation
                                                     </button>
@@ -485,7 +639,7 @@ const AdminChat = () => {
                             <AnimatePresence>
                                 {showSearch && (
                                     <motion.div initial={{ height: 0, opacity: 0, marginTop: 0 }} animate={{ height: 'auto', opacity: 1, marginTop: 12 }} exit={{ height: 0, opacity: 0, marginTop: 0 }} className="w-full">
-                                        <input type="text" placeholder="Search customer's messages..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-lg text-[13px] px-4 py-2 focus:ring-1 focus:ring-black outline-none transition-all" />
+                                        <input type="text" placeholder="Search customer's messages..." value={searchTerm} onChange={handleSearch} className="w-full bg-gray-50 border border-gray-200 rounded-lg text-[13px] px-4 py-2 focus:ring-1 focus:ring-black outline-none transition-all" />
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -509,12 +663,25 @@ const AdminChat = () => {
                             )}
                             {!hasMore && filteredMessages.length > 0 && !searchTerm && <p className="text-center text-xs text-gray-400 my-2">-- Start of conversation --</p>}
 
-                            {filteredMessages.length === 0 && searchTerm && (
+                            {isLoadingMessages ? (
+                                <div className="flex flex-col gap-4">
+                                    {[1, 2, 3, 4].map(n => (
+                                        <div key={n} className={`flex ${n % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                                            <div className="w-1/2 h-14 bg-gray-200 animate-pulse rounded-2xl" />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : filteredMessages.length === 0 && !searchTerm ? (
+                                <div className="m-auto text-center text-gray-400 flex flex-col items-center">
+                                    <HiOutlineChatBubbleLeftEllipsis className="w-12 h-12 mb-3 opacity-20" />
+                                    <p className="font-medium text-gray-500">Pick a customer to start chatting</p>
+                                </div>
+                            ) : filteredMessages.length === 0 && searchTerm ? (
                                 <div className="m-auto text-center text-gray-400 flex flex-col items-center">
                                     <HiOutlineSearch className="w-10 h-10 mb-2 opacity-50" />
                                     <p className="font-medium text-gray-800">No matches found</p>
                                 </div>
-                            )}
+                            ) : null}
 
                             {filteredMessages.map((msg, index) => {
                                 const isMe = msg.senderType === 'Admin';
@@ -525,12 +692,23 @@ const AdminChat = () => {
                                 const prevDate = index > 0 ? new Date(filteredMessages[index - 1].createdAt).toLocaleDateString() : null;
                                 const showDateHeader = msgDate !== prevDate && !searchTerm;
 
+                                const getFriendlyDate = (dateStr) => {
+                                    const date = new Date(dateStr);
+                                    const today = new Date();
+                                    const yesterday = new Date();
+                                    yesterday.setDate(today.getDate() - 1);
+
+                                    if (date.toLocaleDateString() === today.toLocaleDateString()) return 'Today';
+                                    if (date.toLocaleDateString() === yesterday.toLocaleDateString()) return 'Yesterday';
+                                    return date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+                                };
+
                                 return (
                                     <React.Fragment key={msg._id || index}>
                                         {showDateHeader && (
-                                            <div className="flex justify-center my-1.5 w-full relative z-0">
-                                                <span className="text-[10px] bg-gray-200/80 text-gray-500 px-3 py-1 rounded-full font-semibold uppercase tracking-wider">
-                                                    {msgDate === new Date().toLocaleDateString() ? 'Today' : msgDate}
+                                            <div className="flex justify-center my-6 w-full">
+                                                <span className="text-[10px] bg-white text-gray-400 px-4 py-1.5 rounded-full font-bold shadow-sm border border-gray-100 uppercase tracking-widest leading-none">
+                                                    {getFriendlyDate(msg.createdAt)}
                                                 </span>
                                             </div>
                                         )}
@@ -553,30 +731,66 @@ const AdminChat = () => {
 
                                             <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[75%]`}>
                                                 {msg.replyTo && !isDeleted && (
-                                                    <div className={`text-[12px] p-2 mb-1.5 rounded-md opacity-90 border-l-2 truncate w-full ${isMe ? 'bg-gray-200 border-black text-black' : 'bg-gray-200 border-gray-400 text-gray-700'}`}>
+                                                    <div
+                                                        onClick={() => {
+                                                            const el = document.getElementById(`msg-${msg.replyTo._id}`);
+                                                            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                        }}
+                                                        className={`text-[12px] p-2 mb-1.5 rounded-md opacity-90 border-l-2 truncate w-full cursor-pointer hover:bg-opacity-100 transition-all ${isMe ? 'bg-gray-200 border-black text-black' : 'bg-gray-200 border-gray-400 text-gray-700'}`}>
                                                         <span className="font-semibold block">{msg.replyTo.senderType === 'User' ? 'Customer' : 'You'}</span>
                                                         {msg.replyTo.message || "Attachment"}
                                                     </div>
                                                 )}
 
-                                                <div className={`relative px-4 py-2.5 shadow-sm 
-                                            ${isDeleted ? 'bg-white text-gray-400 italic border border-gray-200 rounded-2xl'
-                                                        : isMe ? 'bg-black text-white rounded-2xl rounded-br-sm' : 'bg-white border text-gray-800 border-gray-200 rounded-2xl rounded-bl-sm'}
-                                            `}>
+                                                <div
+                                                    id={`msg-${msg._id}`}
+                                                    className={`relative px-4 py-2.5 shadow-sm 
+                                                ${isDeleted ? 'bg-white text-gray-400 italic border border-gray-200 rounded-2xl'
+                                                            : isMe ? 'bg-black text-white rounded-2xl rounded-br-sm' : 'bg-white border text-gray-800 border-gray-200 rounded-2xl rounded-bl-sm'}
+                                                `}>
                                                     {!isDeleted && (
-                                                        <button
-                                                            onClick={() => setActiveMenu(activeMenu === msg._id ? null : msg._id)}
-                                                            className={`absolute top-2.5 ${isMe ? '-left-10' : '-right-10'} opacity-0 group-hover:opacity-100 text-gray-400 hover:text-black transition-opacity p-1.5 bg-white rounded-full shadow-sm border border-gray-100`}
-                                                        >
-                                                            <HiDotsVertical className="w-4 h-4" />
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === msg._id ? null : msg._id); }}
+                                                                className={`absolute top-0 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 text-gray-400 hover:text-black transition-all bg-white rounded-full shadow-sm border border-gray-100 z-20 ${isMe ? 'right-full mr-2' : 'left-full ml-2'}`}
+                                                            >
+                                                                <HiDotsVertical className="w-4 h-4" />
+                                                            </button>
+
+                                                            <AnimatePresence>
+                                                                {activeMenu === msg._id && !isDeleted && (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, scale: 0.95, x: isMe ? -10 : 10 }}
+                                                                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                                                                        exit={{ opacity: 0, scale: 0.95, x: isMe ? -10 : 10 }}
+                                                                        className={`absolute top-0 z-[9999] bg-white shadow-2xl border border-gray-100 rounded-xl w-48 text-[13px] overflow-hidden flex flex-col py-1.5 ${isMe ? 'right-full mr-12' : 'left-full ml-12'}`}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <button onClick={() => { setReplyingTo(msg); setActiveMenu(null); }} className="px-5 py-2.5 text-left hover:bg-gray-50 text-gray-700 flex items-center gap-2 font-medium transition-colors"><HiOutlineReply className="w-4 h-4" /> Reply</button>
+                                                                        <div className="px-5 py-2.5 flex justify-between bg-gray-50/50 border-y border-gray-100 my-0.5">
+                                                                            {['👍', '❤️', '😂', '😮', '😢'].map(em => (
+                                                                                <span key={em} className="cursor-pointer hover:scale-125 transition-transform text-lg" onClick={() => toggleReaction(msg._id, em)}>{em}</span>
+                                                                            ))}
+                                                                        </div>
+                                                                        {msg.message && <button onClick={() => { copyText(msg.message); setActiveMenu(null); }} className="px-5 py-3 text-left hover:bg-gray-50 text-gray-700 flex items-center gap-2 font-medium transition-colors"><HiOutlineDocumentDuplicate className="w-4 h-4" /> Copy Text</button>}
+                                                                        {isMe && <button onClick={() => startEdit(msg)} className="px-5 py-2.5 text-left hover:bg-gray-50 text-gray-700 flex items-center gap-2 font-medium transition-colors">Edit Message</button>}
+                                                                        {isMe && <button onClick={() => deleteMsg(msg._id, false)} className="px-5 py-2.5 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium transition-colors mt-1 border-t border-gray-100 pt-3"><HiOutlineTrash className="w-4 h-4" /> Delete for me</button>}
+                                                                        {isMe && <button onClick={() => deleteMsg(msg._id, true)} className="px-5 py-2.5 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium transition-colors pb-3"><HiOutlineTrash className="w-4 h-4" /> Delete for everyone</button>}
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </>
                                                     )}
 
                                                     {!isDeleted && msg.fileUrl && (
                                                         <div className={`mb-2 ${msg.message ? 'border-b border-gray-200/20 pb-2.5' : ''}`}>
-                                                            {msg.messageType === 'image' ? (
+                                                            {msg.messageType === 'voice' ? (
+                                                                <div className="flex items-center gap-2 min-w-[200px] py-1">
+                                                                    <audio controls className="h-10 w-full" src={`${SOCKET_URL}${msg.fileUrl}`} />
+                                                                </div>
+                                                            ) : msg.messageType === 'image' ? (
                                                                 <div onClick={() => setPreviewModal(msg.fileUrl)} className="cursor-pointer overflow-hidden rounded-xl bg-white border border-gray-100 flex items-center justify-center">
-                                                                    <img src={SOCKET_URL + msg.fileUrl} alt="Attachment" className="max-w-full max-h-56 object-cover hover:scale-105 transition-transform duration-300" />
+                                                                    <img src={getFullUrl(msg.fileUrl)} alt="Attachment" className="max-w-full max-h-56 object-cover hover:scale-105 transition-transform duration-300" />
                                                                 </div>
                                                             ) : (
                                                                 <div className={`flex items-center justify-between gap-3 p-2.5 rounded-xl ${isMe ? 'bg-gray-800/80 border border-gray-700' : 'bg-gray-100 border border-gray-200'} transition-colors mt-1`}>
@@ -620,33 +834,19 @@ const AdminChat = () => {
                                                     {msg.isEdited && !isDeleted && <span className="italic mr-0.5">(edited)</span>}
                                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     {isMe && !isDeleted && (
-                                                        <span className="font-bold tracking-tighter">
-                                                            {msg.status === 'Sent' ? '✓' : msg.status === 'Delivered' ? '✓✓' : <span className="text-blue-500">✓✓</span>}
+                                                        <span className="font-bold tracking-tighter text-[12px] ml-1">
+                                                            {msg.status === 'Sent' ? (
+                                                                <span title="Sent">✓</span>
+                                                            ) : msg.status === 'Delivered' ? (
+                                                                <span title="Delivered">✓✓</span>
+                                                            ) : (
+                                                                <span className="text-blue-500" title="Seen by Customer">✓✓</span>
+                                                            )}
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                <AnimatePresence>
-                                                    {activeMenu === msg._id && !isDeleted && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, scale: 0.95 }}
-                                                            animate={{ opacity: 1, scale: 1 }}
-                                                            exit={{ opacity: 0, scale: 0.95 }}
-                                                            className={`absolute top-6 ${isMe ? 'right-[105%] mr-3' : 'left-[105%] ml-3'} z-50 bg-white shadow-xl shadow-black/5 border border-gray-100 rounded-xl w-48 text-[13px] overflow-hidden flex flex-col py-1.5`}
-                                                        >
-                                                            <button onClick={() => { setReplyingTo(msg); setActiveMenu(null); }} className="px-5 py-2.5 text-left hover:bg-gray-50 text-gray-700 flex items-center gap-2 font-medium transition-colors"><HiOutlineReply className="w-4 h-4" /> Reply</button>
-                                                            <div className="px-5 py-2.5 flex justify-between bg-gray-50/50 border-y border-gray-100 my-0.5">
-                                                                {['👍', '❤️', '😂', '😮', '😢'].map(em => (
-                                                                    <span key={em} className="cursor-pointer hover:scale-125 transition-transform text-lg" onClick={() => toggleReaction(msg._id, em)}>{em}</span>
-                                                                ))}
-                                                            </div>
-                                                            {msg.message && <button onClick={() => copyText(msg.message)} className="px-5 py-3 text-left hover:bg-gray-50 text-gray-700 flex items-center gap-2 font-medium transition-colors"><HiOutlineDocumentDuplicate className="w-4 h-4" /> Copy Text</button>}
-                                                            {isMe && <button onClick={() => startEdit(msg)} className="px-5 py-2.5 text-left hover:bg-gray-50 text-gray-700 flex items-center gap-2 font-medium transition-colors">Edit Message</button>}
-                                                            {isMe && <button onClick={() => deleteMsg(msg._id, false)} className="px-5 py-2.5 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium transition-colors mt-1 border-t border-gray-100 pt-3"><HiOutlineTrash className="w-4 h-4" /> Delete for me</button>}
-                                                            {isMe && <button onClick={() => deleteMsg(msg._id, true)} className="px-5 py-2.5 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium transition-colors pb-3"><HiOutlineTrash className="w-4 h-4" /> Delete for everyone</button>}
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+
                                             </div>
                                         </motion.div>
                                     </React.Fragment>
@@ -774,9 +974,9 @@ const AdminChat = () => {
                         <button className="absolute top-6 right-6 text-white bg-white/20 hover:bg-white/40 p-2 rounded-full transition-colors" onClick={() => setPreviewModal(null)}>
                             <HiX className="w-6 h-6" />
                         </button>
-                        <motion.img initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} src={SOCKET_URL + previewModal} alt="Preview" className="max-w-[85vw] max-h-[85vh] object-contain rounded-xl shadow-2xl border border-white/10" onClick={(e) => e.stopPropagation()} />
+                        <motion.img initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} src={previewModal ? SOCKET_URL + previewModal : null} alt="Preview" className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl border border-white/10" onClick={(e) => e.stopPropagation()} />
                         <div className="absolute bottom-6 flex gap-4">
-                            <a href={SOCKET_URL + previewModal} download target="_blank" rel="noopener noreferrer" className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-full font-medium tracking-wide transition-colors backdrop-blur-md flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <a href={previewModal ? SOCKET_URL + previewModal : null} download target="_blank" rel="noopener noreferrer" className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-full font-medium tracking-wide transition-colors backdrop-blur-md flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                 <HiOutlineDocumentDuplicate className="w-5 h-5" /> Download Image
                             </a>
                         </div>
@@ -812,6 +1012,27 @@ const AdminChat = () => {
                 {toastMessage && (
                     <motion.div initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3.5 rounded-2xl shadow-2xl shadow-black/20 z-[30000] flex items-center gap-2 text-[14px] font-medium min-w-[300px] justify-center border border-white/10 backdrop-blur-md">
                         {toastMessage}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            {/* Gallery Modal */}
+            <AnimatePresence>
+                {showGallery && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[10000] flex flex-col p-4 font-sans">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-white font-bold">Image Gallery</h3>
+                            <button onClick={() => setShowGallery(false)} className="text-white p-2 hover:bg-white/10 rounded-full transition-all"><HiX className="w-6 h-6" /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 content-start pb-20">
+                            {messages.filter(m => m.messageType === 'image' && !m.isDeleted).map(m => (
+                                <div key={m._id} className="aspect-square relative rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" onClick={() => { setPreviewModal(m.fileUrl); setShowGallery(false); }}>
+                                    <img src={m.fileUrl ? `${SOCKET_URL}${m.fileUrl}` : null} alt="Gallery item" className="w-full h-full object-cover" />
+                                </div>
+                            ))}
+                        </div>
+                        {messages.filter(m => m.messageType === 'image' && !m.isDeleted).length === 0 && (
+                            <div className="m-auto text-gray-400 text-center">No images found in this chat.</div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

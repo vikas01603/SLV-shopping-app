@@ -42,6 +42,14 @@ const userSchema = new mongoose.Schema(
             }
         ],
 
+        isBlocked: {
+            type: Boolean,
+            default: false,
+        },
+        lastSeen: {
+            type: Date,
+            default: Date.now,
+        },
     },
     { timestamps: true }
 );

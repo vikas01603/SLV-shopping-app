@@ -31,6 +31,16 @@ const chatRoomSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        chatStatus: {
+            type: String,
+            enum: ["Open", "Pending", "Resolved"],
+            default: "Open",
+        },
+        assignedTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User", // Support agent
+            default: null,
+        },
     },
     { timestamps: true }
 );

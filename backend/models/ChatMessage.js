@@ -76,7 +76,21 @@ const chatMessageSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: ["Sent", "Delivered", "Seen"],
-            default: "Delivered",
+            default: "Sent",
+        },
+        isPinned: {
+            type: Boolean,
+            default: false,
+        },
+        isBookmarked: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "User",
+            default: [],
+        },
+        forwardedFrom: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ChatMessage",
+            default: null,
         },
     },
     { timestamps: true }
