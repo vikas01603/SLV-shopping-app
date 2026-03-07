@@ -65,6 +65,17 @@ app.use("/api/admin/users", adminRoutes);
 app.use("/api/admin/products", productAdminRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Export for Vercel
+app.use((req, res, next) => {
+    req.io = io;
+    next();
 });
+
+// Start server only if not in serverless environment
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    server.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;

@@ -1,8 +1,17 @@
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
 const ChatRoom = require("../models/ChatRoom");
 const ChatMessage = require("../models/ChatMessage");
 const User = require("../models/User"); // Ensure user model exists
+
+// cloudinary configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Get or Create Room for User
 const getUserRoom = async (req, res) => {
@@ -95,13 +104,27 @@ const uploadFile = async (req, res) => {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
+        // Stream upload to Cloudinary
+        const streamUpload = (fileBuffer) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream({
+                    resource_type: "auto",
+                    folder: "chat_attachments"
+                }, (error, result) => {
+                    if (result) resolve(result);
+                    else reject(error);
+                });
+                streamifier.createReadStream(fileBuffer).pipe(stream);
+            });
+        };
+
+        const result = await streamUpload(req.file.buffer);
+
         const isImage = req.file.mimetype.startsWith('image/');
         const isAudio = req.file.mimetype.startsWith('audio/') || req.file.mimetype.includes('webm');
-        const fileType = isImage ? 'images' : (isAudio ? 'audio' : 'files');
-        const fileUrl = `/uploads/${fileType === 'audio' ? 'files' : fileType}/${req.file.filename}`;
 
         res.status(200).json({
-            fileUrl,
+            fileUrl: result.secure_url,
             fileType: isImage ? 'image' : (isAudio ? 'voice' : 'file'),
             fileName: req.file.originalname,
             fileSize: req.file.size,
