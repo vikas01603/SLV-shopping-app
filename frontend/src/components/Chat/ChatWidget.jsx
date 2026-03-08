@@ -323,10 +323,10 @@ const ChatWidget = () => {
     }, [isOpen]);
 
     useEffect(() => {
-        if (!editingMsg && messages[messages.length - 1]?.senderType === 'User' && !searchTerm) {
+        if (!editingMsg && !searchTerm && messages.length > 0) {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages, searchTerm]);
+    }, [messages, searchTerm, editingMsg]);
 
     useEffect(() => {
         if (isOpen && room && socket) {

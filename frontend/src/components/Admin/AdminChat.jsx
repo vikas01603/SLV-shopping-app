@@ -263,10 +263,10 @@ const AdminChat = () => {
     };
 
     useEffect(() => {
-        if (!editingMsg && messages[messages.length - 1]?.senderType === 'Admin' && !searchTerm) {
+        if (!editingMsg && !searchTerm && messages.length > 0) {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages, searchTerm]);
+    }, [messages, searchTerm, editingMsg]);
 
     useEffect(() => {
         if (selectedRoom && socket) {
