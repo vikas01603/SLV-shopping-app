@@ -80,7 +80,11 @@ export const forgotPassword = createAsyncThunk("auth/forgotPassword", async (ema
         const response = await axios.post(`${API_URL}/api/users/forgot-password`, { email });
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(
+            error.response?.data?.message ||
+            error.message ||
+            "Failed to connect to server"
+        );
     }
 });
 
@@ -90,7 +94,11 @@ export const resetPassword = createAsyncThunk("auth/resetPassword", async ({ tok
         const response = await axios.post(`${API_URL}/api/users/reset-password/${token}`, { password });
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(
+            error.response?.data?.message ||
+            error.message ||
+            "Failed to connect to server"
+        );
     }
 });
 
@@ -172,7 +180,7 @@ const authSlice = createSlice({
             })
             .addCase(forgotPassword.rejected, (state, action) => {
                 state.resetLoading = false;
-                state.resetError = action.payload.message;
+                state.resetError = action.payload || "An unexpected error occurred";
             })
             .addCase(resetPassword.pending, (state) => {
                 state.resetLoading = true;
@@ -185,7 +193,7 @@ const authSlice = createSlice({
             })
             .addCase(resetPassword.rejected, (state, action) => {
                 state.resetLoading = false;
-                state.resetError = action.payload.message;
+                state.resetError = action.payload?.message || action.payload || "An unexpected error occurred";
             });
     }
 });

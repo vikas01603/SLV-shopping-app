@@ -134,12 +134,15 @@ router.post("/forgot-password", async (req, res) => {
 
             res.status(200).json({ message: "If this email exists, a password reset link has been sent." });
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ message: "Email could not be sent" });
+            console.error("Nodemailer Error Details:", err);
+            res.status(500).json({
+                message: "Email could not be sent",
+                details: process.env.NODE_ENV === 'production' ? undefined : err.message
+            });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        console.error("Forgot Password Controller Error:", error);
+        res.status(500).json({ message: "Server error during password reset request" });
     }
 });
 

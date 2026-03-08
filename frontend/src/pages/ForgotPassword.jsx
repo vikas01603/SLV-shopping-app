@@ -5,12 +5,27 @@ import { forgotPassword } from "../redux/slices/authSlice";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
     const dispatch = useDispatch();
-    const { resetLoading, resetError, resetSuccess } = useSelector((state) => state.auth);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch(forgotPassword(email));
+        setLoading(true);
+        setError(null);
+        setSuccess(false);
+
+        try {
+            await dispatch(forgotPassword(email)).unwrap();
+            setSuccess(true);
+            setEmail(""); // Clear email on success
+        } catch (err) {
+            console.error("Forgot password error:", err);
+            setError(err || "Failed to send reset link. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -38,22 +53,22 @@ const ForgotPassword = () => {
 
                     <button
                         type="submit"
-                        disabled={resetLoading}
+                        disabled={loading}
                         className="w-full bg-black text-white py-3.5 rounded-lg font-bold tracking-widest hover:bg-gray-900 transform transition-all shadow-md hover:shadow-lg text-sm uppercase disabled:bg-gray-400"
                     >
-                        {resetLoading ? "Sending Link..." : "Send Reset Link"}
+                        {loading ? "Sending Link..." : "Send Reset Link"}
                     </button>
                 </form>
 
-                {resetSuccess && (
+                {success && (
                     <p className="mt-6 text-center text-green-600 text-sm font-medium bg-green-50 p-2 rounded-lg border border-green-100">
                         If this email exists, a password reset link has been sent.
                     </p>
                 )}
 
-                {resetError && (
+                {error && (
                     <p className="mt-6 text-center text-red-500 text-sm font-medium bg-red-50 p-2 rounded-lg border border-red-100">
-                        {resetError}
+                        {error}
                     </p>
                 )}
 

@@ -7,6 +7,7 @@ import { HiOutlineChatBubbleLeftEllipsis, HiMiniXMark, HiPaperAirplane, HiOutlin
 import { HiOutlineEmojiHappy, HiDotsVertical, HiX, HiOutlineReply, HiOutlineSearch, HiOutlineDocumentDuplicate, HiOutlineTrash } from "react-icons/hi";
 import EmojiPicker from 'emoji-picker-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 // Use environment variable for backend URL, fallback to window.location if deployed on same domain
 const getBackendUrl = () => {
@@ -39,6 +40,7 @@ const playPopSound = () => {
 
 const ChatWidget = () => {
     const { user } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [room, setRoom] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -73,6 +75,7 @@ const ChatWidget = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeletingChat, setIsDeletingChat] = useState(false);
     const [toastMessage, setToastMessage] = useState(null);
+    const [showGuestModal, setShowGuestModal] = useState(false);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
     const timerRef = useRef(null);
@@ -129,10 +132,18 @@ const ChatWidget = () => {
 
     // Open listener from Footer
     useEffect(() => {
-        const handleOpenChat = () => setIsOpen(true);
+        const handleOpenChat = () => handleToggleChat(true);
         window.addEventListener('open-chat', handleOpenChat);
         return () => window.removeEventListener('open-chat', handleOpenChat);
-    }, []);
+    }, [user]);
+
+    const handleToggleChat = (openState) => {
+        if (openState && !user) {
+            setShowGuestModal(true);
+            return;
+        }
+        setIsOpen(openState);
+    };
 
     // Fetch initial
     useEffect(() => {
@@ -576,7 +587,7 @@ const ChatWidget = () => {
         setActiveMenu(null);
     };
 
-    if (!user || user.role === 'admin') return null;
+    if (user && user.role === 'admin') return null;
 
     // Filter Messages
     const filteredMessages = messages
@@ -641,7 +652,7 @@ const ChatWidget = () => {
                                         )}
                                     </AnimatePresence>
                                 </div>
-                                <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-all">
+                                <button onClick={() => handleToggleChat(false)} className="text-gray-400 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-all">
                                     <HiMiniXMark className="w-6 h-6" />
                                 </button>
                             </div>
@@ -1018,7 +1029,7 @@ const ChatWidget = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsOpen(true)}
+                    onClick={() => handleToggleChat(true)}
                     className="bg-black text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl flex items-center justify-center relative group"
                 >
                     <HiOutlineChatBubbleLeftEllipsis className="w-7 h-7 sm:w-8 sm:h-8" />
@@ -1074,6 +1085,55 @@ const ChatWidget = () => {
                 {toastMessage && (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-24 right-6 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-2xl z-[30000] flex items-center gap-2 text-[13px] font-medium border border-white/10 backdrop-blur-md">
                         {toastMessage}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* GUEST LOGIN MODAL */}
+            <AnimatePresence>
+                {showGuestModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[20000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-md"
+                        onClick={() => setShowGuestModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="bg-white rounded-[28px] w-full max-w-[360px] p-8 shadow-2xl relative overflow-hidden border border-gray-100 flex flex-col items-center text-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6 shadow-xl shadow-black/10">
+                                <HiOutlineUserCircle className="w-9 h-9 text-white" />
+                            </div>
+
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">Sign in to Chat</h3>
+                            <p className="text-[14px] text-gray-500 mb-8 leading-relaxed px-4">
+                                Please login to your account to connect with our customer support team and get assistance.
+                            </p>
+
+                            <div className="flex flex-col gap-3 w-full">
+                                <button
+                                    onClick={() => {
+                                        setShowGuestModal(false);
+                                        navigate('/login');
+                                    }}
+                                    className="w-full py-4 rounded-2xl bg-black hover:bg-gray-800 text-white font-bold transition-all shadow-lg shadow-black/20 flex items-center justify-center gap-2 group text-[15px]"
+                                >
+                                    Login Now
+                                    <HiPaperAirplane className="w-4 h-4 -rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </button>
+                                <button
+                                    onClick={() => setShowGuestModal(false)}
+                                    className="w-full py-4 rounded-2xl text-gray-500 hover:bg-gray-50 font-semibold transition-colors text-[14px]"
+                                >
+                                    Maybe Later
+                                </button>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
