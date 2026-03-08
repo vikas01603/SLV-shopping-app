@@ -324,7 +324,7 @@ const ChatWidget = () => {
 
     useEffect(() => {
         if (!editingMsg && !searchTerm && messages.length > 0) {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
         }
     }, [messages, searchTerm, editingMsg]);
 
