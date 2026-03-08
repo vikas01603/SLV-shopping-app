@@ -6,25 +6,6 @@ SLV Online Stores is a full-stack e-commerce web application where users can bro
 
 **Live Link:** [https://slv-online-stores.vercel.app/](https://slv-online-stores.vercel.app/)
 
-## 🔐 Admin Credentials
-
-- **Username:** [admin@example.com](mailto:admin@example.com)
-- **Password:** `123456`
-
-## ✨ Features
-
-- **Product browsing:** Easily navigate through various product categories.
-- **Product details page:** View comprehensive details, images, and pricing for each product.
-- **Shopping cart:** Add, remove, and update quantities of desired items.
-- **Checkout and order confirmation:** Securely finalize purchases and receive order summaries.
-- **User authentication:** Register, log in, and securely manage user sessions.
-- **Wishlist:** Save favorite products for future purchases.
-- **Notifications:** Receive updates on order status and important alerts.
-- **Real-time chat:** Seamless communication between customer and admin.
-- **Admin dashboard:** Comprehensive control panel for the store owner.
-- **Product management:** Admins can add, edit, or delete inventory.
-- **Order management:** Track and update customer orders efficiently.
-
 ## 💻 Frontend Technologies
 
 - **React**
@@ -124,6 +105,8 @@ cd frontend
 npm run dev
 ```
 
+and also checkout package.json and install all the needed packages
+
 ## 📖 How to Use the System
 
 1. **Register a user:** Start by creating a new account to access personalized features.
@@ -132,25 +115,3 @@ npm run dev
 4. **Add to cart:** Select products you wish to purchase and add them to your cart.
 5. **Checkout:** Proceed to the checkout page when ready to purchase.
 6. **Place order:** Complete the payment process to place your order successfully.
-
-## 📸 Screenshots
-
-### Home Page
-*(Placeholder for Home Page screenshot)*  
-`![Home Page Screenshot](./screenshots/home-page.png)`
-
-### Product Page
-*(Placeholder for Product Page screenshot)*  
-`![Product Page Screenshot](./screenshots/product-page.png)`
-
-### Cart Page
-*(Placeholder for Cart Page screenshot)*  
-`![Cart Page Screenshot](./screenshots/cart-page.png)`
-
-### Checkout Page
-*(Placeholder for Checkout Page screenshot)*  
-`![Checkout Page Screenshot](./screenshots/checkout-page.png)`
-
-### Admin Dashboard
-*(Placeholder for Admin Dashboard screenshot)*  
-`![Admin Dashboard Screenshot](./screenshots/admin-dashboard.png)`
