@@ -92,6 +92,86 @@ router.post("/login", async (req, res) => {
     }
 });
 
+const sendEmail = require("../utils/sendEmail");
+
+// @route POST /api/users/forgot-password
+// @desc Send reset password link
+// @access Public
+router.post("/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+
+        // Security: Don't reveal if user exists
+        if (!user) {
+            return res.status(200).json({ message: "If this email exists, a password reset link has been sent." });
+        }
+
+        // Generate reset token (expires in 15 mins)
+        const resetToken = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "15m" }
+        );
+
+        // Env specific logic for frontend URL
+        // Dynamically determine the frontend URL
+        const frontendURL =
+            (process.env.NODE_ENV === "production" || process.env.VERCEL)
+                ? process.env.FRONTEND_URL
+                : (req.get("origin") || "http://localhost:5173");
+
+        const resetUrl = `${frontendURL}/reset-password/${resetToken}`;
+
+        const message = `Click the link below to reset your password:\n\n${resetUrl}\n\nThis link expires in 15 minutes.`;
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: "Password Reset Request",
+                message,
+            });
+
+            res.status(200).json({ message: "If this email exists, a password reset link has been sent." });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: "Email could not be sent" });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// @route POST /api/users/reset-password/:token
+// @desc Reset password
+// @access Public
+router.post("/reset-password/:token", async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Update password (hashing is handled by User model pre-save hook)
+        user.password = password;
+        await user.save();
+
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        console.error(error);
+        if (error.name === "TokenExpiredError") {
+            return res.status(400).json({ message: "Reset token has expired" });
+        }
+        res.status(400).json({ message: "Invalid or expired token" });
+    }
+});
+
 // @route POST /api/users/google-login
 // @desc Authenticate a user with Google OAuth
 // @access Public

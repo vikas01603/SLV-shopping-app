@@ -25,6 +25,8 @@ import AboutUs from "./pages/AboutUs";
 import FAQs from "./pages/FAQs";
 import Features from "./pages/Features";
 import ContactUs from "./pages/ContactUs";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 import { Provider } from "react-redux";
 import store from "./redux/store";
@@ -57,6 +59,8 @@ const App = () => {
             <Route path="faqs" element={<FAQs />} />
             <Route path="features" element={<Features />} />
             <Route path="contact-us" element={<ContactUs />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password/:token" element={<ResetPassword />} />
           </Route>
 
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
