@@ -1,45 +1,30 @@
 const sendEmail = async (options) => {
-    // We are using the Brevo (Sendinblue) REST API to completely bypass 
-    // Render's SMTP port 587 block. This sends via standard HTTPS (Port 443).
+    // We are using a 100% FREE Google Apps Script endpoint to send emails.
+    // This completely bypasses Render's SMTP block because it's a standard HTTPS request,
+    // and it uses your exact own Gmail account without any third-party app!
     
-    const url = 'https://api.brevo.com/v3/smtp/email';
-    const apiKey = process.env.BREVO_API_KEY;
+    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
-    if (!apiKey) {
-        throw new Error("Missing BREVO_API_KEY in environment variables. Please add it to Render and your local .env file.");
+    if (!scriptUrl) {
+        throw new Error("Missing GOOGLE_SCRIPT_URL. Please follow the Apps Script setup instructions.");
     }
 
     const payload = {
-        sender: {
-            name: "SLV Support",
-            email: process.env.EMAIL_USER || "support.slvfashion@gmail.com"
-        },
-        to: [
-            {
-                email: options.email,
-            }
-        ],
+        to: options.email,
         subject: options.subject,
-        textContent: options.message,
+        message: options.message,
     };
 
-    const response = await fetch(url, {
+    const response = await fetch(scriptUrl, {
         method: 'POST',
+        body: JSON.stringify(payload),
         headers: {
-            'accept': 'application/json',
-            'api-key': apiKey,
-            'content-type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+            'Content-Type': 'application/json'
+        }
     });
 
     if (!response.ok) {
-        let errorMsg = response.statusText;
-        try {
-            const errorData = await response.json();
-            errorMsg = JSON.stringify(errorData);
-        } catch (e) {}
-        throw new Error(`Email API failed to send: ${errorMsg}`);
+        throw new Error(`Google Script failed to send: ${response.statusText}`);
     }
 };
 
