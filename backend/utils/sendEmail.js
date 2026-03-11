@@ -4,16 +4,15 @@ const sendEmail = async (options) => {
     // 1) Create a transporter
     // Using Gmail service explicitly for better compatibility
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
         host: process.env.EMAIL_HOST || "smtp.gmail.com",
-        port: process.env.EMAIL_PORT || 587,
-        secure: process.env.EMAIL_PORT === '465', // true for 465, false for 587
+        port: Number(process.env.EMAIL_PORT) || 587,
+        secure: Number(process.env.EMAIL_PORT) === 465,
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
         },
         tls: {
-            rejectUnauthorized: false // Helps with some cloud hosting environments
+            rejectUnauthorized: false 
         }
     });
 

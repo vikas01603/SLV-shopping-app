@@ -137,7 +137,7 @@ router.post("/forgot-password", async (req, res) => {
             console.error("Nodemailer Error Details:", err);
             res.status(500).json({
                 message: "Email could not be sent",
-                details: process.env.NODE_ENV === 'production' ? undefined : err.message
+                details: err.message
             });
         }
     } catch (error) {
