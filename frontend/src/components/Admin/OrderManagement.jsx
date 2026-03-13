@@ -2,8 +2,9 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllOrders, updateOrderStatus } from '../../redux/slices/adminOrderSlice';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaCheckCircle, FaChevronDown } from "react-icons/fa";
+import AdminOrderDetails from './AdminOrderDetails';
 
 const OrderManagement = () => {
 
@@ -26,6 +27,7 @@ const OrderManagement = () => {
     }
 
     const [sortOption, setSortOption] = React.useState("newest");
+    const [selectedOrder, setSelectedOrder] = React.useState(null);
 
     const sortedOrders = [...orders].sort((a, b) => {
         if (sortOption === "newest") {
@@ -101,7 +103,11 @@ const OrderManagement = () => {
                             <tbody className="divide-y divide-gray-50">
                                 {sortedOrders.length > 0 ? (
                                     sortedOrders.map((order) => (
-                                        <tr key={order._id} className="group hover:bg-gray-50/50 transition-colors">
+                                        <tr 
+                                            key={order._id} 
+                                            onClick={() => setSelectedOrder(order)}
+                                            className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                        >
                                             <td className="py-4 px-6 font-mono text-[10px] text-gray-400 group-hover:text-black transition-colors truncate">
                                                 #{order._id.slice(-6).toUpperCase()}
                                             </td>
@@ -115,6 +121,7 @@ const OrderManagement = () => {
                                             <td className="py-4 px-6">
                                                 <select
                                                     value={order.status}
+                                                    onClick={(e) => e.stopPropagation()}
                                                     onChange={(e) => handleStatusChange(order._id, e.target.value)}
                                                     className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border-none outline-none cursor-pointer transition-colors max-w-full ${order.status === 'Delivered'
                                                         ? 'bg-emerald-50 text-emerald-600'
@@ -134,7 +141,10 @@ const OrderManagement = () => {
                                             <td className="py-4 px-6">
                                                 <div className="flex justify-end">
                                                     <button
-                                                        onClick={() => handleStatusChange(order._id, "Delivered")}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleStatusChange(order._id, "Delivered");
+                                                        }}
                                                         disabled={order.status === "Delivered"}
                                                         className={`px-3 py-1.5 rounded-lg text-[9px] font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap overflow-hidden ${order.status === "Delivered"
                                                             ? "bg-gray-50 text-gray-300 cursor-not-allowed"
@@ -160,6 +170,16 @@ const OrderManagement = () => {
                     </div>
                 )}
             </div>
+            {/* Order Details Drawer */}
+            <AnimatePresence>
+                {selectedOrder && (
+                    <AdminOrderDetails 
+                        order={selectedOrder} 
+                        onClose={() => setSelectedOrder(null)} 
+                        onUpdateStatus={handleStatusChange} 
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     )
 }

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { deleteUser, updateUser, fetchUsers, createUser } from '../../redux/slices/adminSlice';
-import { motion } from "framer-motion";
+import { fetchAllOrders } from '../../redux/slices/adminOrderSlice';
+import { motion, AnimatePresence } from "framer-motion";
 import { FaUserPlus, FaTrash, FaShieldAlt, FaEnvelope, FaUser, FaChevronDown } from "react-icons/fa";
+import AdminUserDetails from './AdminUserDetails';
 
 const UserManagement = () => {
     const dispatch = useDispatch();
@@ -11,6 +13,7 @@ const UserManagement = () => {
 
     const { user } = useSelector((state) => state.auth);
     const { users, loading, error } = useSelector((state) => state.admin);
+    const { orders } = useSelector((state) => state.adminOrders);
 
     useEffect(() => {
         if (user && user.role !== "admin") {
@@ -21,6 +24,7 @@ const UserManagement = () => {
     useEffect(() => {
         if (user && user.role === "admin") {
             dispatch(fetchUsers());
+            dispatch(fetchAllOrders());
         }
     }, [user, dispatch]);
 
@@ -57,6 +61,7 @@ const UserManagement = () => {
     };
 
     const [sortOption, setSortOption] = useState("newest");
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const filteredUsers = [...users].sort((a, b) => {
         if (sortOption === "newest") {
@@ -65,6 +70,17 @@ const UserManagement = () => {
             return new Date(a.createdAt) - new Date(b.createdAt);
         }
         return 0;
+    }).map(u => {
+        // Find user's latest order to extract phone and address
+        const userOrders = orders?.filter(o => o.user?._id === u._id) || [];
+        const latestOrder = userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+        
+        return {
+            ...u,
+            // Only override if the user model doesn't already have them
+            phone: u.phone || latestOrder?.shippingAddress?.phone || u.phone, 
+            address: u.address?.address ? u.address : latestOrder?.shippingAddress || u.address
+        };
     });
 
     const containerVariants = {
@@ -183,7 +199,11 @@ const UserManagement = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {filteredUsers.map((u) => (
-                                <tr key={u._id} className="group hover:bg-gray-50/20 transition-colors">
+                                <tr 
+                                    key={u._id} 
+                                    onClick={() => setSelectedUser(u)}
+                                    className="group hover:bg-gray-50/20 transition-colors cursor-pointer"
+                                >
                                     <td className="py-6 px-10 text-sm">
                                         <div className="flex items-center gap-4 truncate">
                                             <div className="w-10 h-10 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400 font-bold text-[12px] group-hover:bg-black group-hover:text-white group-hover:border-black transition-all duration-300 flex-shrink-0 shadow-sm">
@@ -198,7 +218,10 @@ const UserManagement = () => {
                                     <td className="py-6 px-10 text-xs">
                                         <div className="flex items-center gap-3">
                                             <FaShieldAlt className={u.role === 'admin' ? 'text-black' : 'text-gray-200'} size={14} />
-                                            <select value={u.role} onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                                            <select 
+                                                value={u.role} 
+                                                onClick={(e) => e.stopPropagation()}
+                                                onChange={(e) => handleRoleChange(u._id, e.target.value)}
                                                 className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-transparent outline-none cursor-pointer transition-all ${u.role === 'admin'
                                                     ? 'bg-black text-white'
                                                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
@@ -211,7 +234,10 @@ const UserManagement = () => {
                                     </td>
                                     <td className="py-6 px-10 text-right">
                                         <button
-                                            onClick={() => handleDeleteUser(u._id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteUser(u._id);
+                                            }}
                                             disabled={u._id === user?._id}
                                             className={`p-3 rounded-xl transition-all ${u._id === user?._id
                                                 ? "bg-gray-50 text-gray-200 cursor-not-allowed"
@@ -227,6 +253,19 @@ const UserManagement = () => {
                     </table>
                 </div>
             </div>
+
+            {/* User Details Modal */}
+            <AnimatePresence>
+                {selectedUser && (
+                    <AdminUserDetails 
+                        user={selectedUser} 
+                        onClose={() => setSelectedUser(null)} 
+                        onRoleChange={handleRoleChange}
+                        onDeleteUser={handleDeleteUser}
+                        currentUser={user}
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     )
 }
