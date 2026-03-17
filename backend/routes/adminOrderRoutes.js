@@ -32,7 +32,7 @@ router.put("/:id", protect, admin, async (req, res) => {
             const updatedOrder = await order.save();
 
             // Create notification for the user
-            if (req.body.status) {
+            if (req.body.status && order.user) {
                 await Notification.create({
                     user: order.user._id,
                     title: `Order Status Updated`,

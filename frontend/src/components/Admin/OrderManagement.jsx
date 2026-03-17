@@ -111,9 +111,24 @@ const OrderManagement = () => {
                                             <td className="py-4 px-6 font-mono text-[10px] text-gray-400 group-hover:text-black transition-colors truncate">
                                                 #{order._id.slice(-6).toUpperCase()}
                                             </td>
-                                            <td className="py-4 px-6">
-                                                <div className="font-bold text-black text-sm truncate">{order.user.name}</div>
-                                                <div className="text-[9px] text-gray-400 font-medium uppercase truncate">{order.user.email}</div>
+                                            <td className="py-4 px-6 text-sm">
+                                                <div className="flex flex-col">
+                                                    <div className="font-bold text-black truncate">
+                                                        {order.user?.name || order.userSnapshot?.name || "Unknown User"}
+                                                    </div>
+                                                    <div className="text-[9px] text-gray-400 font-medium uppercase truncate">
+                                                        {order.user?.email || order.userSnapshot?.email || "No Email"}
+                                                    </div>
+                                                    {!order.user && order.userSnapshot && (
+                                                        <span 
+                                                            className="mt-1 text-[9px] text-gray-400 flex items-center gap-1 font-bold uppercase tracking-tighter"
+                                                            title="This user account was deleted, but order data is preserved for records."
+                                                        >
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                            Former User
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="py-4 px-6 font-bold text-black text-sm">
                                                 ₹{order.totalPrice.toFixed(2)}

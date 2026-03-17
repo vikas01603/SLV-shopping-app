@@ -80,6 +80,10 @@ router.post("/:id/finalize", protect, async (req, res) => {
             //Create final order based on the checkout details
             const finalOrder = await Order.create({
                 user: checkout.user,
+                userSnapshot: {
+                    name: req.user.name,
+                    email: req.user.email,
+                },
                 orderItems: checkout.checkoutItems,
                 shippingAddress: checkout.shippingAddress,
                 paymentMethod: checkout.paymentMethod,

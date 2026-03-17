@@ -98,9 +98,22 @@ const AdminOrderDetails = ({ order, onClose, onUpdateStatus }) => {
                             <h3 className="text-sm font-bold text-black uppercase tracking-wide">Customer Information</h3>
                         </div>
                         <div className="bg-white border text-sm border-gray-100 rounded-xl p-4 shadow-sm space-y-2">
-                            <div>
-                                <p className="font-bold text-black">{order.user?.name || "Unknown Customer"}</p>
-                                <p className="text-gray-500 mt-1">{order.user?.email || "No email provided"}</p>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-black text-base">
+                                    {order.user?.name || order.userSnapshot?.name || "Unknown Customer"}
+                                </span>
+                                <span className="text-gray-500 mt-0.5">
+                                    {order.user?.email || order.userSnapshot?.email || "No email provided"}
+                                </span>
+                                {!order.user && order.userSnapshot && (
+                                    <div 
+                                        className="mt-2 inline-flex items-center gap-2 px-2 py-0.5 bg-gray-50 text-gray-500 rounded-md border border-gray-100 w-fit"
+                                        title="This user account was deleted, but order data is preserved for records."
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse"></span>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">Former User</span>
+                                    </div>
+                                )}
                             </div>
                             
                             {(order.shippingAddress?.phone || order.user?.phone) && (

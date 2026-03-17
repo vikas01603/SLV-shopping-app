@@ -34,6 +34,10 @@ const orderSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    userSnapshot: {
+        name: { type: String, required: false },
+        email: { type: String, required: false },
+    },
     orderItems: [orderItemSchema],
     shippingAddress: {
         address: { type: String, required: true },

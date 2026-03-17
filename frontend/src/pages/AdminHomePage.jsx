@@ -143,8 +143,21 @@ const AdminHomePage = () => {
                                         <td className="py-4 px-8 font-mono text-[10px] text-gray-400 group-hover:text-black transition-colors">
                                             #{order._id.slice(-6).toUpperCase()}
                                         </td>
-                                        <td className="py-4 px-8 font-semibold text-black text-sm">
-                                            {order.user.name}
+                                        <td className="py-4 px-8 text-sm">
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-black">
+                                                    {order.user?.name || order.userSnapshot?.name || "Unknown User"}
+                                                </span>
+                                                {!order.user && order.userSnapshot && (
+                                                    <span 
+                                                        className="text-[10px] text-gray-400 flex items-center gap-1"
+                                                        title="This user account was deleted, but order data is preserved for records."
+                                                    >
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                        Former User
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="py-4 px-8 font-bold text-black text-sm">
                                             ₹{order.totalPrice.toFixed(2)}
