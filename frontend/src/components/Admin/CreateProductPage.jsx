@@ -51,7 +51,7 @@ const CreateProductPage = () => {
                 {
                     headers: {
                         "Content-Type": "multipart/form-data",
-                         Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+                        Authorization: `Bearer ${localStorage.getItem("userToken")}`,
                     },
                 }
             );
@@ -86,7 +86,7 @@ const CreateProductPage = () => {
     };
 
     return (
-        <motion.div 
+        <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -103,14 +103,14 @@ const CreateProductPage = () => {
             {/* Form Container */}
             <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 md:p-14 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-neutral-50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-                
+
                 {error && <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 font-medium">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
+
                     {/* Primary Info */}
                     <div className="space-y-6 md:col-span-2">
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Product Name</label>
                             <input type="text" name="name" value={productData.name} onChange={handleChange}
                                 className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-black transition-all font-bold text-lg"
@@ -135,7 +135,7 @@ const CreateProductPage = () => {
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Count in Stock</label>
                         <input type="number" name="countInStock" value={productData.countInStock} onChange={handleChange}
                             className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-black transition-all font-bold text-xl"
-                             required />
+                            required />
                     </div>
 
                     {/* Metadata */}
@@ -179,7 +179,7 @@ const CreateProductPage = () => {
                         <input type="text" name="colors" value={productData.colors.join(",")}
                             onChange={(e) => setProductData({ ...productData, colors: e.target.value.split(",").map((color) => color.trim()) })}
                             className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-black transition-all font-bold text-xs"
-                             placeholder="Red, Blue, Gold" required />
+                            placeholder="Red, Blue, Gold" required />
                     </div>
 
                     {/* Classifications */}
@@ -204,9 +204,9 @@ const CreateProductPage = () => {
                     {/* Image Assets - Grand Aesthetic */}
                     <div className="md:col-span-2 space-y-6 pt-4 border-t border-gray-50 mt-4">
                         <div className="flex flex-col items-center justify-center p-12 bg-gray-50 border-2 border-dashed border-gray-100 rounded-[2rem] group hover:border-black/20 hover:bg-neutral-50 transition-all relative">
-                            <input 
-                                type="file" 
-                                onChange={handleImageUpload} 
+                            <input
+                                type="file"
+                                onChange={handleImageUpload}
                                 className="absolute inset-0 opacity-0 cursor-pointer z-20"
                             />
                             <div className="flex flex-col items-center">
@@ -217,20 +217,20 @@ const CreateProductPage = () => {
                                 <span className="text-[10px] text-gray-400 uppercase tracking-widest mt-1">High resolution assets preferred</span>
                             </div>
                         </div>
-                        
+
                         {uploading && (
-                             <div className="flex items-center gap-3 text-sm font-bold text-blue-500 animate-pulse">
-                                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                 Synchronizing Media...
-                             </div>
+                            <div className="flex items-center gap-3 text-sm font-bold text-blue-500 animate-pulse">
+                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                Synchronizing Media...
+                            </div>
                         )}
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6">
                             {productData.images.map((image, index) => (
-                                <motion.div 
-                                    initial={{ scale: 0.8, opacity: 0 }} 
-                                    animate={{ scale: 1, opacity: 1 }} 
-                                    key={index} 
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    key={index}
                                     className="relative group aspect-square rounded-2xl overflow-hidden shadow-sm"
                                 >
                                     <img src={image.url} alt={image.altText || "Product Image"}
@@ -247,12 +247,12 @@ const CreateProductPage = () => {
 
                     {/* Actions */}
                     <div className="md:col-span-2 pt-10 flex justify-center">
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             disabled={loading}
                             className="bg-black text-white py-4 px-12 rounded-2xl font-bold text-sm uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all shadow-xl active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 flex items-center justify-center gap-3"
                         >
-                           <FaPlusCircle size={14} /> {loading ? "Authorizing Content..." : "Add Product"} 
+                            <FaPlusCircle size={14} /> {loading ? "Authorizing Content..." : "Add Product"}
                         </button>
                     </div>
                 </form>

@@ -31,7 +31,12 @@ router.get("/:id", protect, async(req,res)=>{
             return res.status(404).json({message: "Order not found"});
         }
 
-        //return he full order details
+        // Security Check: Ensure user owns the order OR is an admin
+        if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+            return res.status(403).json({ message: "Not authorized to view this order" });
+        }
+
+        //return the full order details
         res.json(order);
 
     }catch(error){

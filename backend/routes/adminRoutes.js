@@ -1,6 +1,8 @@
 const express = require("express");
 const User = require("../models/User");
 const { protect, admin } = require("../middleware/authMiddleware");
+const { logAdminAction } = require("../services/securityService");
+
 
 const router = express.Router();
 
@@ -36,7 +38,17 @@ router.post("/", protect, admin, async (req, res) => {
             role: role || "customer",
         });
         await user.save();
+        await logAdminAction({
+            adminId: req.user._id,
+            action: "CREATE_USER",
+            targetType: "USER",
+            targetId: user._id,
+            description: `Created user: ${user.name} (${user.email}) as ${user.role}`,
+            newValue: user,
+            ip: req.ip
+        });
         res.status(201).json({ message: "User created successfully", user });
+
 
     } catch (error) {
         console.error(error);
@@ -57,7 +69,17 @@ router.put("/:id", protect, admin, async (req, res) => {
             user.role = req.body.role || user.role;
         }
         const updatedUser = await user.save();
+        await logAdminAction({
+            adminId: req.user._id,
+            action: "UPDATE_USER",
+            targetType: "USER",
+            targetId: updatedUser._id,
+            description: `Updated user: ${updatedUser.name} (${updatedUser.email})`,
+            newValue: updatedUser,
+            ip: req.ip
+        });
         res.json({ message: "User updated successfully", user: updatedUser });
+
 
     } catch (error) {
         console.error(error);
@@ -73,8 +95,18 @@ router.delete("/:id", protect, admin, async (req, res) => {
         const user = await User.findById(req.params.id);
 
         if (user) {
+            await logAdminAction({
+                adminId: req.user._id,
+                action: "DELETE_USER",
+                targetType: "USER",
+                targetId: user._id,
+                description: `Deleted user: ${user.name} (${user.email})`,
+                prevValue: user,
+                ip: req.ip
+            });
             await user.deleteOne();
             res.json({ message: "User deleted successfully!" });
+
         } else {
             res.status(404).json({ message: "User not found" });
         }

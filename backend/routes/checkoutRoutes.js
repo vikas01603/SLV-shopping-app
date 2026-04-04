@@ -49,6 +49,12 @@ router.put("/:id/pay", protect, async (req, res) => {
             return res.status(404).json({ message: "Checkout not found" });
         }
 
+        // Security Check: Ensure user owns the checkout
+        if (checkout.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Not authorized to pay for this checkout" });
+        }
+
+
         if (paymentStatus === "paid") {
             checkout.isPaid = true;
             checkout.paymentStatus = paymentStatus;
@@ -76,6 +82,12 @@ router.post("/:id/finalize", protect, async (req, res) => {
         if (!checkout) {
             return res.status(404).json({ message: "Checkout not found" });
         }
+
+        // Security Check: Ensure user owns the checkout
+        if (checkout.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Not authorized to finalize this checkout" });
+        }
+
         if (checkout.isPaid && !checkout.isFinalized) {
             //Create final order based on the checkout details
             const finalOrder = await Order.create({

@@ -21,6 +21,15 @@ const protect = async (req, res, next) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             req.user = await User.findById(decoded.user.id).select("-password"); //exclude password 
+
+            if (!req.user) {
+                return res.status(401).json({ message: "User no longer exists" });
+            }
+
+            if (req.user.isBlocked) {
+                return res.status(403).json({ message: "Your account has been blocked. Please contact support." });
+            }
+
             next();
 
         } catch (error) {

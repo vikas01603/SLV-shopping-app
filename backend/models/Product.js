@@ -1,59 +1,59 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-    name:{
+    name: {
         type: String,
         required: true,
         trim: true,
     },
-    description:{
+    description: {
         type: String,
         required: true,
     },
-    price:{
+    price: {
         type: Number,
         required: true,
     },
-    discountPrice:{
-        type:Number,
+    discountPrice: {
+        type: Number,
     },
-    countInStock:{
+    countInStock: {
         type: Number,
         required: true,
         default: 0,
     },
-    sku:{
+    sku: {
         type: String,
         unique: true,
         required: true,
     },
-    category:{
+    category: {
         type: String,
         required: true,
     },
-    brand:{
+    brand: {
         type: String,
     },
-    sizes:{
-        type:[String],
+    sizes: {
+        type: [String],
         required: true,
     },
-    colors:{
-        type:[String],
-        required:true,
+    colors: {
+        type: [String],
+        required: true,
     },
-    collections:{
-        type:String,
-        required:true,
+    collections: {
+        type: String,
+        required: true,
     },
-    material:{
+    material: {
         type: String,
     },
-    gender:{
+    gender: {
         type: String,
-        enum: ["Men","Women","Unisex"],
+        enum: ["Men", "Women", "Unisex"],
     },
-    images:[{
+    images: [{
         url: {
             type: String,
             required: true,
@@ -61,28 +61,28 @@ const productSchema = new mongoose.Schema({
         altText: {
             type: String,
         },
-      },
+    },
     ],
     isFeatured: {
         type: Boolean,
         default: false,
     },
-    isPublished:{
+    isPublished: {
         type: Boolean,
         default: false,
     },
-    rating:{
-        type:Number,
-        default:0,
-    },
-    numReviews:{
+    rating: {
         type: Number,
         default: 0,
     },
-    tags:[String],
-    user:{
+    numReviews: {
+        type: Number,
+        default: 0,
+    },
+    tags: [String],
+    user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:"User",
+        ref: "User",
         required: true,
     },
     metaTitle: {
@@ -94,14 +94,14 @@ const productSchema = new mongoose.Schema({
     metaKeywords: {
         type: String,
     },
-    dimensions:{
+    dimensions: {
         length: Number,
         width: Number,
         height: Number,
     },
     weight: Number,
-    },
-    {timestamps:true}
- );
+},
+    { timestamps: true }
+);
 
 module.exports = mongoose.model("Product", productSchema);

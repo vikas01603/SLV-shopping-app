@@ -1,13 +1,13 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 
 const API_URL = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
 //Async thunk to fetch admin products
-export const fetchAdminProducts = createAsyncThunk("adminProducts/fetchProducts", async() => {
+export const fetchAdminProducts = createAsyncThunk("adminProducts/fetchProducts", async () => {
     const response = await axios.get(`${API_URL}/api/admin/products`, {
-        headers:{
+        headers: {
             Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
     });
@@ -15,7 +15,7 @@ export const fetchAdminProducts = createAsyncThunk("adminProducts/fetchProducts"
 });
 
 //Async thunk to create a new product
-export const createProduct = createAsyncThunk("adminProducts/createProduct", async(productData) => {
+export const createProduct = createAsyncThunk("adminProducts/createProduct", async (productData) => {
     const response = await axios.post(`${API_URL}/api/admin/products`, productData, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("userToken")}`,
@@ -25,10 +25,10 @@ export const createProduct = createAsyncThunk("adminProducts/createProduct", asy
 });
 
 //async thunk to update an existing product
-export const updateProduct = createAsyncThunk("adminProducts/updateProduct", async({id, productData})=> {
+export const updateProduct = createAsyncThunk("adminProducts/updateProduct", async ({ id, productData }) => {
     const response = await axios.put(`${API_URL}/api/admin/products/${id}`, productData,
         {
-            headers:{
+            headers: {
                 Authorization: `Bearer ${localStorage.getItem("userToken")}`,
             },
         }
@@ -37,10 +37,10 @@ export const updateProduct = createAsyncThunk("adminProducts/updateProduct", asy
 });
 
 //Async thunk to delete a product
-export const deleteProduct = createAsyncThunk("adminProducts/deleteProduct", async(id) => {
+export const deleteProduct = createAsyncThunk("adminProducts/deleteProduct", async (id) => {
     await axios.delete(`${API_URL}/api/admin/products/${id}`, {
         headers: {
-            Authorization : `Bearer ${localStorage.getItem("userToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
     });
     return id;
@@ -50,67 +50,67 @@ const adminProductSlice = createSlice({
     name: "adminProducts",
     initialState: {
         products: [],
-        loading :false,
+        loading: false,
         error: null,
     },
     reducers: {},
     extraReducers: (builder) => {
         builder
-        //fetch admin products
-        .addCase(fetchAdminProducts.pending, (state) => {
-            state.loading=true;
-            state.error=null;
-        })
-        .addCase(fetchAdminProducts.fulfilled, (state, action) => {
-            state.loading=false;
-            state.products=action.payload;
-        })
-        .addCase(fetchAdminProducts.rejected, (state, action) => {
-            state.loading=false;
-            state.error=action.payload.message;
-        })
-        //create product
-        .addCase(createProduct.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        })
-        .addCase(createProduct.fulfilled, (state, action) => {
-            state.loading = false;
-            state.products.push(action.payload);
-        })
-        .addCase(createProduct.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        })
-        //update product
-        .addCase(updateProduct.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        })
-        .addCase(updateProduct.fulfilled, (state, action) => {
-            state.loading = false;
-            const index = state.products.findIndex((product) => product._id === action.payload._id);
-            if(index !== -1){
-                state.products[index] = action.payload;
-            }
-        })
-        .addCase(updateProduct.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        })
-        //Delete products
-        .addCase(deleteProduct.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        })
-        .addCase(deleteProduct.fulfilled, (state, action) => {
-            state.loading = false;
-            state.products = state.products.filter((product) => product._id !== action.payload);
-        })
-        .addCase(deleteProduct.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        })
+            //fetch admin products
+            .addCase(fetchAdminProducts.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAdminProducts.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products = action.payload;
+            })
+            .addCase(fetchAdminProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            })
+            //create product
+            .addCase(createProduct.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createProduct.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products.push(action.payload);
+            })
+            .addCase(createProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            //update product
+            .addCase(updateProduct.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProduct.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.products.findIndex((product) => product._id === action.payload._id);
+                if (index !== -1) {
+                    state.products[index] = action.payload;
+                }
+            })
+            .addCase(updateProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            //Delete products
+            .addCase(deleteProduct.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteProduct.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products = state.products.filter((product) => product._id !== action.payload);
+            })
+            .addCase(deleteProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
 

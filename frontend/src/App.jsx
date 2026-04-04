@@ -19,6 +19,8 @@ import EditProductPage from "./components/Admin/EditProductPage";
 import CreateProductPage from "./components/Admin/CreateProductPage";
 import OrderManagement from "./components/Admin/OrderManagement";
 import AdminChat from "./components/Admin/AdminChat";
+import AdminSecurityDashboard from "./pages/AdminSecurityDashboard";
+
 import Wishlist from "./pages/Wishlist";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutUs from "./pages/AboutUs";
@@ -71,6 +73,8 @@ const App = () => {
             <Route path="products/:id/edit" element={<EditProductPage />} />
             <Route path="orders" element={<OrderManagement />} />
             <Route path="chat" element={<AdminChat />} />
+            <Route path="security" element={<AdminSecurityDashboard />} />
+
 
           </Route>
 

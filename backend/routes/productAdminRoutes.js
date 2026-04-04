@@ -3,6 +3,8 @@ const Product = require("../models/Product");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const { protect, admin } = require("../middleware/authMiddleware");
+const { logAdminAction } = require("../services/securityService");
+
 
 const router = express.Router();
 
@@ -60,6 +62,17 @@ router.post("/", protect, admin, async (req, res) => {
             // Don't fail the product creation
         }
 
+        await logAdminAction({
+            adminId: req.user._id,
+            action: "CREATE_PRODUCT",
+            targetType: "PRODUCT",
+            targetId: createdProduct._id,
+            description: `Created product: ${createdProduct.name} (SKU: ${createdProduct.sku})`,
+            newValue: createdProduct,
+            ip: req.ip
+        });
+
+
         res.status(201).json(createdProduct);
     } catch (error) {
         console.error(error);
@@ -89,7 +102,17 @@ router.put("/:id", protect, admin, async (req, res) => {
             product.countInStock = req.body.countInStock || product.countInStock;
 
             const updatedProduct = await product.save();
+            await logAdminAction({
+                adminId: req.user._id,
+                action: "UPDATE_PRODUCT",
+                targetType: "PRODUCT",
+                targetId: updatedProduct._id,
+                description: `Updated product: ${updatedProduct.name}`,
+                newValue: updatedProduct,
+                ip: req.ip
+            });
             res.json(updatedProduct);
+
         } else {
             res.status(404).json({ message: "Product not found" });
         }
@@ -106,8 +129,18 @@ router.delete("/:id", protect, admin, async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
         if (product) {
+            await logAdminAction({
+                adminId: req.user._id,
+                action: "DELETE_PRODUCT",
+                targetType: "PRODUCT",
+                targetId: product._id,
+                description: `Deleted product: ${product.name} (SKU: ${product.sku})`,
+                prevValue: product,
+                ip: req.ip
+            });
             await product.deleteOne();
             res.json({ message: "Product removed" });
+
         } else {
             res.status(404).json({ message: "Product not found" });
         }

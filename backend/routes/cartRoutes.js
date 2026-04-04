@@ -2,13 +2,45 @@ const express = require("express");
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
 const { protect } = require("../middleware/authMiddleware");
+const jwt = require("jsonwebtoken");
+
 
 const router = express.Router();
 
 //helping us to get cart by user ID or a guest ID
-const getCart = async (userId, guestId) => {
-    if (userId) {
-        return await Cart.findOne({ user: userId });
+const getCart = async (req, userId, guestId) => {
+    // Priority 1: User ID from body/query
+    // Priority 2: User ID from token if present
+    // Priority 3: Guest ID
+
+    let effectiveUserId = userId;
+    
+    // Check if token is present to verify userId
+    if (req.headers.authorization) {
+        try {
+            const token = req.headers.authorization.split(" ")[1];
+            const cleanToken = token.startsWith('"') ? token.slice(1, -1) : token;
+            const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET);
+            const tokenUserId = decoded.user?.id || decoded.id;
+            
+            // If they provided a userId, it MUST match the token
+            if (userId && userId.toString() !== tokenUserId.toString()) {
+                throw new Error("Unauthorized");
+            }
+            effectiveUserId = tokenUserId;
+        } catch (e) {
+            // If they provided a userId but the token is invalid or missing,
+            // we should NOT allow using that userId for sensitive changes.
+            if (userId) return "UNAUTHORIZED";
+        }
+    } else if (userId) {
+        // userId provided without any token: Forbidden for sensitive routes
+        // unless it's just a Fetch (even then, it's safer to block)
+        return "UNAUTHORIZED";
+    }
+
+    if (effectiveUserId) {
+        return await Cart.findOne({ user: effectiveUserId });
     } else if (guestId) {
         return await Cart.findOne({ guestId: guestId });
     }
@@ -19,13 +51,23 @@ const getCart = async (userId, guestId) => {
 // @desc Add a product to the cart for guests or logged in users
 // @access Public
 router.post("/", async (req, res) => {
-    const { productId, quantity, size, color, guestId, userId } = req.body;
+    const { productId, quantity, size, color, guestId } = req.body;
+    let { userId } = req.body;
+
+    // Security: If userId is provided, it should ideally be handled via a protected route or verified
+    // For now, if a token is present, we should use that ID.
+    // However, since this is a public route, we'll just ensure people can't easily guess IDs
+    // A better way is to only allow 'userId' if 'protect' middleware is used.
+
     try {
         const product = await Product.findById(productId);
         if (!product) return res.status(404).json({ message: "Product not found" });
 
         //Determine if the user is logged in or a guest
-        let cart = await getCart(userId, guestId);
+        let cart = await getCart(req, userId, guestId);
+        if (cart === "UNAUTHORIZED") {
+            return res.status(401).json({ message: "Not authorized to access this cart" });
+        }
 
         //if the cart exist, update it
         if (cart) {
@@ -85,9 +127,16 @@ router.post("/", async (req, res) => {
 // @access Public
 router.put("/", async (req, res) => {
     const { productId, quantity, size, color, guestId, userId } = req.body;
+    
+    // Security check: Only allow operations on your own cart if userId is provided
+    // This is a bit tricky without 'protect' middleware on this route.
+
 
     try {
-        let cart = await getCart(userId, guestId);
+        let cart = await getCart(req, userId, guestId);
+        if (cart === "UNAUTHORIZED") {
+            return res.status(401).json({ message: "Not authorized to access this cart" });
+        }
         if (!cart) return res.status(404).json({ message: "Cart not found" });
 
         const productIndex = cart.products.findIndex(
@@ -122,7 +171,10 @@ router.put("/", async (req, res) => {
 router.delete("/", async (req, res) => {
     const { productId, size, color, guestId, userId } = req.body;
     try {
-        let cart = await getCart(userId, guestId);
+        let cart = await getCart(req, userId, guestId);
+        if (cart === "UNAUTHORIZED") {
+            return res.status(401).json({ message: "Not authorized to access this cart" });
+        }
 
         if (!cart) return res.status(404).json({ message: "cart not found" });
 
@@ -154,7 +206,10 @@ router.get("/", async (req, res) => {
     const { userId, guestId } = req.query;
 
     try {
-        const cart = await getCart(userId, guestId);
+        const cart = await getCart(req, userId, guestId);
+        if (cart === "UNAUTHORIZED") {
+            return res.status(401).json({ message: "Not authorized to access this cart" });
+        }
         if (cart) {
             res.json(cart);
         } else {
