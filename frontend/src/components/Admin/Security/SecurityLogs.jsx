@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLogs } from "../../../redux/slices/securitySlice";
-import { FaDownload, FaSearch, FaFilter, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaDownload, FaSearch, FaFilter, FaChevronLeft, FaChevronRight, FaSignInAlt, FaUserPlus, FaCartPlus, FaCreditCard, FaTools, FaShieldAlt, FaQuestionCircle, FaLock } from "react-icons/fa";
 
 const SecurityLogs = () => {
     const dispatch = useDispatch();
@@ -9,6 +9,21 @@ const SecurityLogs = () => {
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+
+    const formatAction = (action) => {
+        if (!action) return { label: "Unknown Action", icon: <FaQuestionCircle className="text-gray-400" /> };
+        
+        const lowerAction = action.toLowerCase();
+        
+        if (lowerAction.includes("login")) return { label: "User Login", icon: <FaSignInAlt className="text-blue-500" /> };
+        if (lowerAction.includes("register")) return { label: "New Registration", icon: <FaUserPlus className="text-emerald-500" /> };
+        if (lowerAction.includes("checkout") || lowerAction.includes("pay")) return { label: "Payment / Checkout", icon: <FaCreditCard className="text-purple-500" /> };
+        if (lowerAction.includes("cart")) return { label: "Cart Update", icon: <FaCartPlus className="text-orange-500" /> };
+        if (lowerAction.includes("admin")) return { label: "Admin Action", icon: <FaShieldAlt className="text-red-500" /> };
+        if (lowerAction.includes("forgot-password")) return { label: "Password Reset", icon: <FaLock className="text-yellow-500" /> };
+        
+        return { label: action.replace(/^POST |^PUT |^DELETE |^GET /, ""), icon: <FaTools className="text-gray-400" /> };
+    };
 
     useEffect(() => {
         dispatch(fetchLogs({ page, type: searchTerm, status: statusFilter }));
@@ -73,15 +88,25 @@ const SecurityLogs = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 text-xs">
-                        {logs.length > 0 ? logs.map((log) => (
-                            <tr key={log._id} className="hover:bg-gray-50/50 transition-colors">
+                        {logs.length > 0 ? logs.map((log, index) => (
+                            <tr key={`${log._id}-${index}`} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="py-4 px-8 text-gray-500 whitespace-nowrap">
                                     {new Date(log.timestamp).toLocaleString()}
                                 </td>
                                 <td className="py-4 px-8 font-medium">
-                                    <span className="text-xs text-black block max-w-[200px] truncate" title={log.action}>
-                                        {log.action}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-gray-50 rounded-lg text-sm">
+                                            {formatAction(log.action).icon}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-black truncate max-w-[150px]">
+                                                {formatAction(log.action).label}
+                                            </span>
+                                            <span className="text-[9px] text-gray-400 font-mono truncate max-w-[150px]">
+                                                {log.action}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td className="py-4 px-8">
                                     <div className="flex flex-col">
@@ -93,9 +118,14 @@ const SecurityLogs = () => {
                                     {log.ip}
                                 </td>
                                 <td className="py-4 px-8">
-                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                                        log.status === "SUCCESS" ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                        log.status === "SUCCESS" 
+                                        ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                                        : "bg-red-50 text-red-600 border-red-100"
                                     }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                                            log.status === "SUCCESS" ? "bg-emerald-500" : "bg-red-500"
+                                        }`} />
                                         {log.status}
                                     </span>
                                 </td>

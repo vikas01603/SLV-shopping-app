@@ -29,7 +29,7 @@ const logActivity = async (data) => {
     }
 
     // Brute Force Detection
-    if (data.status === "FAILED" && data.action === "LOGIN") {
+    if (data.status === "FAILED" && data.action.toLowerCase().includes("login")) {
       await checkBruteForce(data.ip, data.userId);
     }
 
@@ -95,7 +95,7 @@ const checkBruteForce = async (ip, userId) => {
 
   const count = await SecurityLog.countDocuments({
     $or: [{ ip }, { userId: userId || { $exists: false } }],
-    action: "LOGIN",
+    action: { $regex: /login/i },
     status: "FAILED",
     timestamp: { $gt: new Date(Date.now() - timeframe) },
   });

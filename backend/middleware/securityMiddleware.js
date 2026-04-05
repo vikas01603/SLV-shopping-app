@@ -44,14 +44,18 @@ const securityLogger = async (req, res, next) => {
         device: userAgent ? (userAgent.includes("Mobi") ? "Mobile" : "Desktop") : "Unknown"
       };
 
-      // Only log significant actions or errors
+      // Only log significant actions or errors (mutating requests)
       const action = req.method + " " + req.originalUrl;
+      const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(req.method);
 
       // We can filter what to log here to avoid database bloat
-      const criticalRoutes = ["/api/users/login", "/api/users/register", "/api/checkout/pay", "/api/admin"];
+      const criticalRoutes = ["/api/users", "/api/checkout", "/api/admin", "/api/cart"];
       const isCritical = criticalRoutes.some(route => req.originalUrl.includes(route));
 
-      if (isCritical || statusCode >= 400) {
+      // Avoid double-logging routes that are manually logged in controllers
+      const manuallyLogged = (statusCode >= 400 && (req.originalUrl.includes("/api/users/login") || req.originalUrl.includes("/api/users/forgot-password")));
+
+      if (((isCritical && isMutation) || statusCode >= 400) && !manuallyLogged) {
         await logActivity({
           userId: userId,
           adminId: adminId,

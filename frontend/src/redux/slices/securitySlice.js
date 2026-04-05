@@ -88,11 +88,32 @@ const securitySlice = createSlice({
     },
     reducers: {
         addLog: (state, action) => {
-            state.logs.unshift(action.payload);
+            const exists = state.logs.some(log => log._id === action.payload._id);
+            if (!exists) {
+                state.logs.unshift(action.payload);
+            }
         },
         addAlert: (state, action) => {
-            state.alerts.unshift(action.payload);
-            if (state.metrics) state.metrics.unresolvedAlerts++;
+            const exists = state.alerts.some(alert => alert._id === action.payload._id);
+            if (!exists) {
+                state.alerts.unshift(action.payload);
+                if (state.metrics) state.metrics.unresolvedAlerts++;
+            }
+        },
+        updateAlert: (state, action) => {
+            const index = state.alerts.findIndex(a => a._id === action.payload._id);
+            if (index !== -1) {
+                state.alerts[index] = action.payload;
+            }
+        },
+        addBlock: (state, action) => {
+            const exists = state.blocks.some(b => b._id === action.payload._id);
+            if (!exists) {
+                state.blocks.push(action.payload);
+            }
+        },
+        removeBlockState: (state, action) => {
+            state.blocks = state.blocks.filter(b => b._id !== action.payload);
         }
     },
     extraReducers: (builder) => {
@@ -150,5 +171,5 @@ const securitySlice = createSlice({
     }
 });
 
-export const { addLog, addAlert } = securitySlice.actions;
+export const { addLog, addAlert, updateAlert, addBlock, removeBlockState } = securitySlice.actions;
 export default securitySlice.reducer;

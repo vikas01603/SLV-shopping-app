@@ -20,11 +20,11 @@ router.get("/metrics", async (req, res) => {
             unresolvedAlerts,
             paymentFailuresToday
         ] = await Promise.all([
-            SecurityLog.countDocuments({ action: "POST /api/users/login", status: "SUCCESS", timestamp: { $gte: today } }),
-            SecurityLog.countDocuments({ action: "POST /api/users/login", status: "FAILED", timestamp: { $gte: today } }),
+            SecurityLog.countDocuments({ action: { $regex: /\/api\/users\/login/i }, status: "SUCCESS", timestamp: { $gte: today } }),
+            SecurityLog.countDocuments({ action: { $regex: /\/api\/users\/login/i }, status: "FAILED", timestamp: { $gte: today } }),
             SecurityLog.distinct("userId", { timestamp: { $gte: new Date(Date.now() - 3600000) } }).then(users => users.length),
             SecurityAlert.countDocuments({ isResolved: false }),
-            SecurityLog.countDocuments({ action: { $regex: /checkout/i }, status: "FAILED", timestamp: { $gte: today } })
+            SecurityLog.countDocuments({ action: { $regex: /checkout|pay/i }, status: "FAILED", timestamp: { $gte: today } })
         ]);
 
         res.json({
@@ -106,6 +106,8 @@ router.put("/alerts/:id/resolve", async (req, res) => {
         });
         
         res.json(alert);
+        // Emit real-time sync event
+        if (req.io) req.io.emit("alert_resolved", alert);
     } catch (err) {
         res.status(500).json({ message: "Error resolving alert" });
     }
@@ -142,6 +144,8 @@ router.post("/blocks", async (req, res) => {
         });
 
         res.json(block);
+        // Emit real-time sync event 
+        if (req.io) req.io.emit("new_block", block);
     } catch (err) {
         res.status(500).json({ message: "Error creating block" });
     }
@@ -169,7 +173,9 @@ router.delete("/blocks/:id", async (req, res) => {
             ip: req.ip
         });
 
-        res.json({ message: "Unblocked successfully" });
+        res.json({ message: "Unblocked successfully", blockId: req.params.id });
+        // Emit real-time sync event
+        if (req.io) req.io.emit("block_removed", req.params.id);
     } catch (err) {
         res.status(500).json({ message: "Error removing block" });
     }

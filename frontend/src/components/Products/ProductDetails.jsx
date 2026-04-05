@@ -16,7 +16,7 @@ const ProductDetails = ({ productId, hideBreadcrumbs = false, isEmbedded = false
     const { user, guestId } = useSelector((state) => state.auth);
     const { wishlist } = useSelector((state) => state.wishlist);
 
-    const [mainImage, setMainImage] = useState("");
+    const [mainImage, setMainImage] = useState(null);
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedColor, setSelectedColor] = useState("");
     const [quantity, setQuantity] = useState(1);
@@ -180,11 +180,13 @@ const ProductDetails = ({ productId, hideBreadcrumbs = false, isEmbedded = false
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.5 }}
                                 >
-                                    <img
-                                        src={mainImage}
-                                        alt={selectedProduct.name}
-                                        className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
-                                    />
+                                    {mainImage && (
+                                        <img
+                                            src={mainImage}
+                                            alt={selectedProduct.name}
+                                            className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 cursor-zoom-in"
+                                        />
+                                    )}
                                     <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <button className="bg-white/90 backdrop-blur p-2.5 rounded-full shadow-sm hover:bg-black hover:text-white transition-all">
                                             <FaShare size={16} />
@@ -206,11 +208,13 @@ const ProductDetails = ({ productId, hideBreadcrumbs = false, isEmbedded = false
                                             className={`relative flex-shrink-0 h-24 w-24 overflow-hidden rounded-xl border-2 transition-all ${mainImage === image.url ? 'border-black ring-1 ring-black ring-offset-2' : 'border-transparent hover:border-gray-200'
                                                 }`}
                                         >
-                                            <img
-                                                src={image.url}
-                                                alt={`View ${index + 1}`}
-                                                className="h-full w-full object-cover object-center"
-                                            />
+                                            {image.url && (
+                                                <img
+                                                    src={image.url}
+                                                    alt={`View ${index + 1}`}
+                                                    className="h-full w-full object-cover object-center"
+                                                />
+                                            )}
                                         </motion.button>
                                     ))}
                                 </div>

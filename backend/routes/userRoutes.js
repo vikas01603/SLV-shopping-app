@@ -63,13 +63,13 @@ router.post("/login", async (req, res) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            await logActivity({ action: "LOGIN", status: "FAILED", ip: req.ip, userAgent: req.headers["user-agent"], metadata: { email, reason: "User not found" } });
+            await logActivity({ action: "POST /api/users/login", status: "FAILED", ip: req.ip, userAgent: req.headers["user-agent"], metadata: { email, reason: "User not found" } });
             return res.status(400).json({ message: "Invalid Credentials" });
         }
         const isMatch = await user.matchPassword(password);
 
         if (!isMatch) {
-            await logActivity({ action: "LOGIN", status: "FAILED", userId: user._id, ip: req.ip, userAgent: req.headers["user-agent"], metadata: { email, reason: "Invalid password" } });
+            await logActivity({ action: "POST /api/users/login", status: "FAILED", userId: user._id, ip: req.ip, userAgent: req.headers["user-agent"], metadata: { email, reason: "Invalid password" } });
             return res.status(400).json({ message: "Invalid Credentials" });
         }
 
@@ -113,7 +113,7 @@ router.post("/forgot-password", async (req, res) => {
 
         // Security: Don't reveal if user exists
         if (!user) {
-            await logActivity({ action: "FORGOT_PASSWORD", status: "FAILED", ip: req.ip, userAgent: req.headers["user-agent"], metadata: { email, reason: "User not found" } });
+            await logActivity({ action: "POST /api/users/forgot-password", status: "FAILED", ip: req.ip, userAgent: req.headers["user-agent"], metadata: { email, reason: "User not found" } });
             return res.status(200).json({ message: "If this email exists, a password reset link has been sent." });
         }
 

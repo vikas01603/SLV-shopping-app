@@ -36,13 +36,21 @@ const initialState = {
     error: null,
 };
 
-// ... (CreateAsyncThunks remain largely the same, but the reducer logic changes)
+// Helper to get auth headers
+const getAuthHeaders = () => {
+    const token = localStorage.getItem("userToken");
+    if (token) {
+        return { headers: { Authorization: `Bearer ${token}` } };
+    }
+    return {};
+};
 
 // Fetch Cart
 export const fetchCart = createAsyncThunk("cart/fetchCart", async ({ userId, guestId }, { rejectWithValue }) => {
     try {
         const response = await axios.get(`${API_URL}/api/cart`, {
             params: { userId, guestId },
+            ...getAuthHeaders(),
         });
         return response.data;
     } catch (error) {
@@ -60,7 +68,7 @@ export const addToCart = createAsyncThunk("cart/addToCart", async ({ userId, gue
             quantity,
             size,
             color
-        });
+        }, getAuthHeaders());
         return response.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
@@ -72,7 +80,7 @@ export const updateCartItemQuantity = createAsyncThunk("cart/updateCartItemQuant
     try {
         const response = await axios.put(`${API_URL}/api/cart`, {
             userId, guestId, productId, quantity, size, color
-        });
+        }, getAuthHeaders());
         return response.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
@@ -83,7 +91,8 @@ export const updateCartItemQuantity = createAsyncThunk("cart/updateCartItemQuant
 export const removeFromCart = createAsyncThunk("cart/removeFromCart", async ({ userId, guestId, productId, size, color }, { rejectWithValue }) => {
     try {
         const response = await axios.delete(`${API_URL}/api/cart`, {
-            data: { userId, guestId, productId, size, color }
+            data: { userId, guestId, productId, size, color },
+            ...getAuthHeaders()
         });
         return response.data;
     } catch (error) {

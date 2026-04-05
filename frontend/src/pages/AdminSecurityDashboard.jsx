@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMetrics, fetchAlerts, addLog, addAlert } from "../redux/slices/securitySlice";
+import { fetchMetrics, fetchAlerts, addLog, addAlert, updateAlert, addBlock, removeBlockState } from "../redux/slices/securitySlice";
 import SecurityMetrics from "../components/Admin/Security/SecurityMetrics";
 import SecurityLogs from "../components/Admin/Security/SecurityLogs";
 import SecurityAlerts from "../components/Admin/Security/SecurityAlerts";
@@ -31,6 +31,21 @@ const AdminSecurityDashboard = () => {
 
     socket.on("new_security_alert", (alert) => {
         dispatch(addAlert(alert));
+    });
+
+    socket.on("alert_resolved", (alert) => {
+        dispatch(updateAlert(alert));
+        dispatch(fetchMetrics());
+    });
+
+    socket.on("new_block", (block) => {
+        dispatch(addBlock(block));
+        dispatch(fetchMetrics());
+    });
+
+    socket.on("block_removed", (blockId) => {
+        dispatch(removeBlockState(blockId));
+        dispatch(fetchMetrics());
     });
 
     return () => {
